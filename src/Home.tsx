@@ -5,7 +5,9 @@ const Home = () => {
         Ticket to Ride
       </div>
       <hr></hr>
-      <button>
+      <button onClick={() => {
+        
+      }}>
         Play
       </button>
     </div>
