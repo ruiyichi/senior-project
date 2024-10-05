@@ -1,6 +1,13 @@
-const allowedOrigins = [
-  'http://localhost:3500',
-  'http://localhost:3000'
+import * as dotenv from "dotenv";
+
+dotenv.config();
+
+const allowedOrigins = process.env.NODE_ENV === 'deployment' ? [
+  process.env.DEV_SERVER_URI,
+  process.env.DEV_FRONTEND_URI
+] : [
+  process.env.PROD_SERVER_URI,
+  process.env.PROD_FRONTEND_URI
 ];
 
 export default allowedOrigins;
