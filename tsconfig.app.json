@@ -6,6 +6,10 @@
     "module": "ESNext",
     "skipLibCheck": true,
     "noImplicitAny": false,
+    "baseUrl": "./",
+    "paths": {
+      "@api/*": ["src/api/*"]
+    },
 
     /* Bundler mode */
     "moduleResolution": "bundler",
