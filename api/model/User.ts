@@ -12,13 +12,9 @@ const userSchema = new Schema({
 	},
 	profilePicture: {
 		type: String,
-		default: 'default.png'
+		default: 'train_1.png'
 	},
 	refreshToken: String,
-	experience: {
-		type: Number,
-		default: 0,
-	},
 });
 
 export default mongoose.model('User', userSchema);

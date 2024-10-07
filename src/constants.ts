@@ -1,1 +1,2 @@
-export const SERVER_URI = "http://localhost:3500";
+export const SERVER_URI = import.meta.env.VITE_NODE_ENV === "development" ? import.meta.env.VITE_DEV_SERVER_URI : import.meta.env.VITE_PROD_SERVER_URI;
+export const SOCKET_SERVER_URI = import.meta.env.VITE_NODE_ENV === "development" ? import.meta.env.VITE_DEV_SOCKET_SERVER_URI : import.meta.env.VITE_PROD_SOCKET_SERVER_URI;
