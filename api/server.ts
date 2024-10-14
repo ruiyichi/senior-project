@@ -10,6 +10,7 @@ import { connectDB } from "./config/dbConnection";
 import cookieParser from "cookie-parser";
 import verifyJWT from "./middleware/verifyJWT";
 import path from "path";
+import { Lobby } from "../types/Lobby";
 
 dotenv.config();
 
@@ -57,12 +58,17 @@ function init_server() {
 
 import { Socket, Server } from "socket.io";
 import jwt, { Secret } from 'jsonwebtoken';
+import { createLobbyCode } from "./utils";
+import { MAX_ITER } from "./constants";
 
 function init_websocket_server() {
 	const socketUsers = {} as Record<string, string>;
+	const lobbies = {} as Record<string, Lobby>;
 
-	const io = new Server(3001, { cors: { origin: "http://localhost:3000" }});
+	const io = new Server(3001, { cors: { origin: "http://localhost:5173" }});
 	console.log("Socket server running on port 3001");
+
+	const getSocketByID = (id: string) => io.sockets.sockets.get(id);
 
 	io.use((socket: Socket, next) => {
 		if (socket.handshake.query && socket.handshake.query.token) {
@@ -84,7 +90,61 @@ function init_websocket_server() {
 			delete socketUsers[socket.id];
 		}
 
+		const createLobby = (callback: Function) => {
+			let lobbyCode = createLobbyCode(5);
+			let iterations = 0;
+			while (Object.values(lobbies).map(lobby => lobby.code).includes(lobbyCode) && iterations < MAX_ITER) {
+				lobbyCode = createLobbyCode(5);
+				iterations++;
+			}
+
+			const lobby = {
+				hostId: userID,
+				code: lobbyCode,
+				playerIds: [userID],
+				createdAt: Date.now(),
+				maxPlayers: 6
+			}
+
+			lobbies[userID] = lobby;
+			socket.join(lobbyCode);
+			io.in(lobbyCode).emit("updateLobby", { ...lobby });
+			emitLobbies();
+			callback(lobbyCode);
+		}
+
+		const emitLobbies = () => {
+			Object.keys(socketUsers).forEach(socketId => getSocketByID(socketId)?.emit("updateLobbies", Object.values(lobbies).filter((obj1, i, arr) => arr.findIndex(obj2 => (obj2.hostId === obj1.hostId)) === i)));
+		}
+
+		const joinLobby = (lobbyCode: string, callback: Function) => {
+			let status = "OK";
+	
+			const lobby = Object.values(lobbies).find(lobby => lobby.code === lobbyCode);
+			if (!lobby) {
+				status = "Invalid code";
+				return callback(status);
+			}
+	
+			if (lobby.playerIds.length === lobby.maxPlayers) {
+				status = "Lobby full";
+			} else if (!lobby.playerIds.includes(userID)) {
+				lobbies[userID] = lobby;
+				socket.join(lobbyCode);
+				lobby.playerIds.push(userID);
+				io.in(lobbyCode).emit("updateLobby", { ...lobby });
+				emitLobbies();
+			}
+			callback(status);
+		}
+
 		socket.on("disconnect", handleDisconnect);
+		socket.on("createLobby", createLobby);
+		socket.on("emitLobbies", emitLobbies);
+		socket.on("joinLobby", joinLobby);
+
+		// Send on connect
+		emitLobbies();
 	});
 }
 

@@ -1,13 +1,7 @@
 import { createContext, useContext, useReducer } from "react";
+import { User } from "../../types/User.ts"
 
-export type User = {
-	id: string,
-	username: string,
-	accessToken: string,
-	profilePicture: string
-};
-
-type UserAction = { type: 'update', payload: User } | { type: 'clear'};
+type UserAction = { type: 'update', payload: User } | { type: 'clear' };
 
 type UserContextValue = {
 	user: User,

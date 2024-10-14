@@ -10,6 +10,7 @@ import Login from "./routes/Login"
 import RequireAuth from "./routes/RequireAuth"
 import SocketServerConnection from "./routes/SocketServerConnection"
 import Missing from "./routes/Missing"
+import LobbyRoute from "./routes/LobbyRoute"
 
 const App = () => {
 	return (
@@ -24,6 +25,7 @@ const App = () => {
             <Route path="login" element={<Login />} />
             <Route element={<RequireAuth />}>
               <Route element={<SocketServerConnection />}>
+              <Route path="lobby/*" element={<LobbyRoute />} />
               </Route>
             </Route>
           </Route>
