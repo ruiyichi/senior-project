@@ -1,31 +1,51 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 import { useLobby } from "../contexts/LobbyContext";
-import { useUser } from "../contexts/UserContext";
+import { useEffect } from "react";
 import { useSocket } from "../contexts/SocketContext";
+import BaseScreen from "../components/BaseScreen";
 
-const Lobby = ({ code }: { code: string }) => {
+const Lobby = () => {
 	const { lobby } = useLobby();
-	const { user } = useUser();
 	const { socketRef } = useSocket();
 	const navigate = useNavigate();
 
-	console.log(lobby)
+	useEffect(() => {
+		console.log(lobby)
+		if (Object.keys(lobby).length === 0) {
+			navigate('/');
+		}
+	});
 
-	return (
-		<div>
-			Lobby
+	useEffect(() => {
+		return () => {
+			socketRef.current?.emit("leaveLobby");
+		};
+	}, []);
+
+	return Object.keys(lobby).length !== 0 && (
+		<BaseScreen id='lobby' backButton={false}>
 			<div>
-				Players in lobby:
-				{lobby.playerIds.map(id => {
-					return (
-						<div>
-							{id}
-						</div>
-					)
-				})}
+				<div>
+					Lobby {lobby.code}
+				</div>
+				<div>
+					Players ({lobby.players.length} / {lobby.maxPlayers})
+					<div>
+						Host: {lobby.host.username}
+					</div>
+					{lobby.players.filter(p => p.id !== lobby.host.id).map(player => {
+						return (
+							<div key={player.id}>
+								{player.username}
+							</div>
+						)
+					})}
+				</div>
+				<button>
+					Start Game
+				</button>
 			</div>
-		</div>
+		</BaseScreen>
 	);
 }
 

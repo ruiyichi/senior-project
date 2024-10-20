@@ -20,6 +20,7 @@ const verifyJWT = (req: any, res: Response, next: NextFunction) => {
 			(err: any, decoded: any) => {
 				if (err) return res.sendStatus(403); //invalid token
 				req.id = decoded.UserInfo.id;
+				req.username = decoded.UserInfo.username;
 				next();
 			}
 		);

@@ -10,7 +10,6 @@ import { connectDB } from "./config/dbConnection";
 import cookieParser from "cookie-parser";
 import verifyJWT from "./middleware/verifyJWT";
 import path from "path";
-import { Lobby } from "../types/Lobby";
 
 dotenv.config();
 
@@ -60,10 +59,13 @@ import { Socket, Server } from "socket.io";
 import jwt, { Secret } from 'jsonwebtoken';
 import { createLobbyCode } from "./utils";
 import { MAX_ITER } from "./constants";
+import { WebsocketUser } from "./types/WebsocketUser";
+import { WebsocketLobby } from "./types/WebsocketLobby";
 
 function init_websocket_server() {
-	const socketUsers = {} as Record<string, string>;
-	const lobbies = {} as Record<string, Lobby>;
+	const socket_id_to_users = {} as Record<string, WebsocketUser>;
+	const lobby_id_to_lobby = {} as Record<string, WebsocketLobby>;
+	const player_id_to_lobby_id = {} as Record<string, string>;
 
 	const io = new Server(3001, { cors: { origin: "http://localhost:5173" }});
 	console.log("Socket server running on port 3001");
@@ -75,38 +77,63 @@ function init_websocket_server() {
 			const token = socket.handshake.query.token as string;
 			jwt.verify(token, process.env.ACCESS_TOKEN_SECRET as Secret, (err, decoded: any) => {
 				if (err) return next(new Error('Authentication error'));
-				socketUsers[socket.id] = decoded?.UserInfo?.id;
+				console.log(decoded.UserInfo)
+				socket_id_to_users[socket.id] = decoded.UserInfo as WebsocketUser;
 				next();
 			});
 		} else {
 			next(new Error('Authentication error'));
 		}
 	}).on("connection", socket => {
-		const userID = socketUsers[socket.id];
-		console.log(`Connected ${userID}`)
+		const user = socket_id_to_users[socket.id];
+		console.log(`Connected ${user.id}`);
 
 		const handleDisconnect = () => {
-			console.log(`Disconnected ${socketUsers[socket.id]}`);
-			delete socketUsers[socket.id];
+			console.log(`Disconnected ${socket_id_to_users[socket.id].id}`);
+			delete socket_id_to_users[socket.id];
+			leaveLobby()
+		}
+
+		const leaveLobby = () => {
+			console.log('leave lobby')
+			const lobby_id = player_id_to_lobby_id[user.id];
+			if (!lobby_id) return;
+
+			const lobby = lobby_id_to_lobby[lobby_id];
+			if (!lobby) return;
+
+			if (lobby.host.id === user.id) {
+				delete lobby_id_to_lobby[lobby.code];
+				delete player_id_to_lobby_id[user.id];
+			} else {
+				lobby.players = lobby.players.filter(player => player.id !== user.id);
+			}
+			io.in(lobby.code).emit("updateLobby", { ...lobby });
+			emitLobbies();
 		}
 
 		const createLobby = (callback: Function) => {
+			if (player_id_to_lobby_id[user.id]) {
+				return;
+			}
+
 			let lobbyCode = createLobbyCode(5);
 			let iterations = 0;
-			while (Object.values(lobbies).map(lobby => lobby.code).includes(lobbyCode) && iterations < MAX_ITER) {
+			while (Object.values(lobby_id_to_lobby).map(lobby => lobby.code).includes(lobbyCode) && iterations < MAX_ITER) {
 				lobbyCode = createLobbyCode(5);
 				iterations++;
 			}
 
 			const lobby = {
-				hostId: userID,
+				host: user,
 				code: lobbyCode,
-				playerIds: [userID],
+				players: [user],
 				createdAt: Date.now(),
 				maxPlayers: 6
 			}
 
-			lobbies[userID] = lobby;
+			lobby_id_to_lobby[lobby.code] = lobby;
+			player_id_to_lobby_id[user.id] = lobby.code;
 			socket.join(lobbyCode);
 			io.in(lobbyCode).emit("updateLobby", { ...lobby });
 			emitLobbies();
@@ -114,25 +141,25 @@ function init_websocket_server() {
 		}
 
 		const emitLobbies = () => {
-			Object.keys(socketUsers).forEach(socketId => getSocketByID(socketId)?.emit("updateLobbies", Object.values(lobbies).filter((obj1, i, arr) => arr.findIndex(obj2 => (obj2.hostId === obj1.hostId)) === i)));
+			Object.keys(socket_id_to_users).forEach(socketId => getSocketByID(socketId)?.emit("updateLobbies", Object.values(lobby_id_to_lobby)));
 		}
 
 		const joinLobby = (lobbyCode: string, callback: Function) => {
 			let status = "OK";
 	
-			const lobby = Object.values(lobbies).find(lobby => lobby.code === lobbyCode);
+			const lobby = lobby_id_to_lobby[lobbyCode];
 			if (!lobby) {
 				status = "Invalid code";
 				return callback(status);
 			}
 	
-			if (lobby.playerIds.length === lobby.maxPlayers) {
+			if (lobby.players.length === lobby.maxPlayers) {
 				status = "Lobby full";
-			} else if (!lobby.playerIds.includes(userID)) {
-				lobbies[userID] = lobby;
+			} else if (!lobby.players.find(player => player.id === user.id)) {
+				player_id_to_lobby_id[user.id] = lobby.code;
 				socket.join(lobbyCode);
-				lobby.playerIds.push(userID);
-				io.in(lobbyCode).emit("updateLobby", { ...lobby });
+				lobby.players.push(user);
+				io.in(lobbyCode).emit("updateLobby", lobby);
 				emitLobbies();
 			}
 			callback(status);
@@ -142,6 +169,7 @@ function init_websocket_server() {
 		socket.on("createLobby", createLobby);
 		socket.on("emitLobbies", emitLobbies);
 		socket.on("joinLobby", joinLobby);
+		socket.on("leaveLobby", leaveLobby);
 
 		// Send on connect
 		emitLobbies();

@@ -1,20 +1,20 @@
 import { createContext, useContext, useReducer } from "react";
-import { Lobby } from "../../types/Lobby";
+import { WebsocketLobby } from "../../api/types/WebsocketLobby";
 
 type LobbyAction = { 
 	type: 'update', 
-	payload: Lobby 
+	payload: WebsocketLobby 
 };
 
 type LobbyContextValue = {
-  lobby: Lobby,
+  lobby: WebsocketLobby,
 	updateLobby: React.Dispatch<any>
 };
 
 const LobbyContext = createContext({} as LobbyContextValue);
 
 export const LobbyProvider = ({ children }: { children: React.ReactNode }) => {
-  const lobbyReducer: React.Reducer<Lobby, LobbyAction> = (lobby: Lobby, action: LobbyAction) => {
+  const lobbyReducer: React.Reducer<WebsocketLobby, LobbyAction> = (lobby: WebsocketLobby, action: LobbyAction) => {
 		switch (action.type) {
 			case 'update':
 				return { ...lobby, ...action.payload };
@@ -23,9 +23,9 @@ export const LobbyProvider = ({ children }: { children: React.ReactNode }) => {
 		}
 	}
 
-	const [lobby, dispatchLobby] = useReducer(lobbyReducer, {} as Lobby);
+	const [lobby, dispatchLobby] = useReducer(lobbyReducer, {} as WebsocketLobby);
 
-	const updateLobby = (payload: Lobby) => {
+	const updateLobby = (payload: WebsocketLobby) => {
 		dispatchLobby({ type: 'update', payload });
 	}
 

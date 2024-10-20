@@ -19,6 +19,7 @@ export const handleRefreshToken = async (req: Request, res: Response) => {
 				{
 					UserInfo: {
 						id: decoded.id,
+						username: foundUser.username
 					}
 				},
 				process.env.ACCESS_TOKEN_SECRET as Secret,

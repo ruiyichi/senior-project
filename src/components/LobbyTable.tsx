@@ -33,10 +33,10 @@ const LobbyTable = () => {
         const formattedDatetime = formatDistanceToNow(new Date(lobby.createdAt), { addSuffix: true });
 
         return (
-          <tr key={lobby.hostId}>
+          <tr key={lobby.host.id}>
             <td>{lobby.code}</td>
-            <td>{lobby.hostId}</td>
-            <td>{lobby.playerIds.length} / 6</td>
+            <td>{lobby.host.username}</td>
+            <td>{lobby.players.length} / {lobby.maxPlayers}</td>
             <td>{formattedDatetime}</td>
             <td>
               <button onClick={() => joinLobby(lobby.code)}>Join lobby</button>
