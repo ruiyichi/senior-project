@@ -7,7 +7,7 @@ const LobbyRoute = () => {
 	const code = queryParams.get('code');
 	
 	if (code) {
-		return <Lobby code={code} />;
+		return <Lobby />;
 	} else {
 		return <Navigate to="/" />;
 	}

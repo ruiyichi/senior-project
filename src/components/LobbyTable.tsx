@@ -2,6 +2,7 @@ import { useSocket } from "../contexts/SocketContext";
 import { useLobbies } from "../contexts/LobbiesContext";
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from "react-router-dom";
+import MenuButton from "./MenuButton";
 
 const LobbyTable = () => {
   const { lobbies } = useLobbies();
@@ -20,13 +21,13 @@ const LobbyTable = () => {
   );
 
   return lobbies.length > 0 && (
-    <table>
+    <table className='lobby-table'>
       <tbody>
       <tr>
         <td>Lobby code</td>
         <td>Host</td>
         <td>Number of players</td>
-        <td>Created At</td>
+        <td>Created</td>
         <td>Join</td>
       </tr>
       {lobbies.map(lobby => {
@@ -39,7 +40,7 @@ const LobbyTable = () => {
             <td>{lobby.players.length} / {lobby.maxPlayers}</td>
             <td>{formattedDatetime}</td>
             <td>
-              <button onClick={() => joinLobby(lobby.code)}>Join lobby</button>
+              <MenuButton id='join-lobby-button' onClick={() => joinLobby(lobby.code)}>Join lobby</MenuButton>
             </td>
           </tr>
         );

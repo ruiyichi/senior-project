@@ -1,17 +1,26 @@
 import { MotionProps, motion } from "framer-motion";
 
-const MenuButton = ({ onClick, children }: { onClick?: React.MouseEventHandler<HTMLButtonElement>, children: MotionProps['children'] }) => {
+interface MenuButtonProps {
+	id?: string, 
+	onClick?: React.MouseEventHandler<HTMLButtonElement>, 
+	children: MotionProps['children'],
+	disabled?: boolean
+}
+
+const MenuButton = ({ id, onClick, children, disabled }: MenuButtonProps) => {
 	return (
 		<motion.button 
+			disabled={disabled}
 			className='menu-button pointer'
-			whileHover={{
+			id={id}
+			whileHover={disabled ? {} : {
 				boxShadow: 'none',
 				scale: 0.95
 			}}
-			whileTap={{
+			whileTap={disabled ? {} : {
 				scale: 0.9
 			}}
-			onClick={onClick}
+			onClick={disabled ? undefined : onClick}
 		>
 			{children}
 		</motion.button>

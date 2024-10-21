@@ -95,7 +95,7 @@ function init_websocket_server() {
 		}
 
 		const leaveLobby = () => {
-			console.log('leave lobby')
+			console.log(`${user.username} leave lobby`)
 			const lobby_id = player_id_to_lobby_id[user.id];
 			if (!lobby_id) return;
 
@@ -103,11 +103,16 @@ function init_websocket_server() {
 			if (!lobby) return;
 
 			if (lobby.host.id === user.id) {
-				delete lobby_id_to_lobby[lobby.code];
+				const remaining_players = lobby.players.filter(player => player.id !== user.id);
+				if (remaining_players.length > 0) {
+					lobby.host = remaining_players[0];
+				} else {
+					delete lobby_id_to_lobby[lobby.code];
+				}
 				delete player_id_to_lobby_id[user.id];
-			} else {
-				lobby.players = lobby.players.filter(player => player.id !== user.id);
 			}
+			lobby.players = lobby.players.filter(player => player.id !== user.id);
+			
 			io.in(lobby.code).emit("updateLobby", { ...lobby });
 			emitLobbies();
 		}
@@ -165,11 +170,16 @@ function init_websocket_server() {
 			callback(status);
 		}
 
+		const startGame = (callback: Function) => {
+			callback();
+		}
+
 		socket.on("disconnect", handleDisconnect);
 		socket.on("createLobby", createLobby);
 		socket.on("emitLobbies", emitLobbies);
 		socket.on("joinLobby", joinLobby);
 		socket.on("leaveLobby", leaveLobby);
+		socket.on("startGame", startGame);
 
 		// Send on connect
 		emitLobbies();

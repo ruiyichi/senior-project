@@ -11,6 +11,7 @@ import RequireAuth from "./routes/RequireAuth"
 import SocketServerConnection from "./routes/SocketServerConnection"
 import Missing from "./routes/Missing"
 import LobbyRoute from "./routes/LobbyRoute"
+import GameRoute from "./routes/GameRoute"
 
 const App = () => {
 	return (
@@ -26,6 +27,7 @@ const App = () => {
             <Route element={<RequireAuth />}>
               <Route element={<SocketServerConnection />}>
               <Route path="lobby/*" element={<LobbyRoute />} />
+              <Route path="game" element={<GameRoute />} />
               </Route>
             </Route>
           </Route>

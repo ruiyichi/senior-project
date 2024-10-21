@@ -15,13 +15,15 @@ const LobbyMenu = () => {
 
 	return (
 		<div>
-			Open lobbies
+			<div id='lobby-menu-title'>
+				Open lobbies
+			</div>
 			<div className="lobby-menu-container">
 				<LobbyTable />
 				<div className="create-lobby-container">
 					No open lobbies? Create one!
 				</div>
-				<MenuButton onClick={createLobby}>
+				<MenuButton id='create-lobby-button' onClick={createLobby}>
 					Create lobby
 				</MenuButton>
 			</div>

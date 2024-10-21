@@ -3,14 +3,17 @@ import { useLobby } from "../contexts/LobbyContext";
 import { useEffect } from "react";
 import { useSocket } from "../contexts/SocketContext";
 import BaseScreen from "../components/BaseScreen";
+import { useUser } from "../contexts/UserContext";
+import MenuButton from "../components/MenuButton";
 
 const Lobby = () => {
 	const { lobby } = useLobby();
 	const { socketRef } = useSocket();
+	const { user } = useUser();
+
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		console.log(lobby)
 		if (Object.keys(lobby).length === 0) {
 			navigate('/');
 		}
@@ -22,28 +25,53 @@ const Lobby = () => {
 		};
 	}, []);
 
+	const is_host = user.id === lobby?.host?.id;
+
+	const startGame = () => {
+		socketRef.current?.emit("startGame");
+	}
+
 	return Object.keys(lobby).length !== 0 && (
 		<BaseScreen id='lobby' backButton={false}>
-			<div>
-				<div>
-					Lobby {lobby.code}
-				</div>
-				<div>
-					Players ({lobby.players.length} / {lobby.maxPlayers})
+			<div id='lobby-container'>
+				<div id='lobby-info'>
 					<div>
-						Host: {lobby.host.username}
+						<div>
+							Lobby {lobby.code}
+						</div>
+						<div>
+							Players ({lobby.players.length} / {lobby.maxPlayers})
+						</div>
 					</div>
-					{lobby.players.filter(p => p.id !== lobby.host.id).map(player => {
-						return (
-							<div key={player.id}>
-								{player.username}
+					<div id='players-container'>
+						{is_host ?
+							<div>
+								You
 							</div>
-						)
-					})}
+							:
+							<div>
+								Host: {lobby.host.username}
+							</div>
+						}
+						{lobby.players.filter(p => p.id !== lobby.host.id).map(player => {
+							return (
+								<div key={player.id}>
+									{player.username}
+								</div>
+							)
+						})}
+					</div>
+					{is_host &&
+						<div>
+							YOU are the host!
+						</div>
+					}
 				</div>
-				<button>
-					Start Game
-				</button>
+				{user.id === lobby.host.id &&
+					<MenuButton disabled={lobby.players.length === 1} onClick={startGame}>
+						Start Game
+					</MenuButton>
+				}
 			</div>
 		</BaseScreen>
 	);
