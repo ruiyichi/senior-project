@@ -110,8 +110,8 @@ export const CityMarkers = [
       y: 28.5
     },
     label_offset: {
-      x: 1,
-      y: -0.5
+      x: -6,
+      y: -0.9
     }
   },
   {
@@ -122,7 +122,7 @@ export const CityMarkers = [
     },
     label_offset: {
       x: 1,
-      y: -0.5
+      y: -2
     }
   },
   {
@@ -132,19 +132,19 @@ export const CityMarkers = [
       y: 35.5
     },
     label_offset: {
-      x: 1,
-      y: -0.5
+      x: 2,
+      y: 2
     }
   },
   {
     name: "Washington",
     marker_position: {
-      x: 85,
-      y: 44.5
+      x: 86,
+      y: 46
     },
     label_offset: {
-      x: 1,
-      y: -0.5
+      x: 1.5,
+      y: 0
     }
   },
   {
@@ -154,8 +154,8 @@ export const CityMarkers = [
       y: 55
     },
     label_offset: {
-      x: 1,
-      y: -0.5
+      x: 3.5,
+      y: 0
     }
   },
   {
@@ -187,8 +187,8 @@ export const CityMarkers = [
       y: 77.5
     },
     label_offset: {
-      x: 1,
-      y: -0.5
+      x: 0,
+      y: 4
     }
   },
   {
@@ -319,8 +319,8 @@ export const CityMarkers = [
       y: 61
     },
     label_offset: {
-      x: -3,
-      y: 1
+      x: -9,
+      y: 7
     }
   },
   {
@@ -341,8 +341,8 @@ export const CityMarkers = [
       y: 64
     },
     label_offset: {
-      x: -3,
-      y: 1
+      x: -4.5,
+      y: -5
     }
   },
   {
@@ -352,8 +352,8 @@ export const CityMarkers = [
       y: 53
     },
     label_offset: {
-      x: 4.5,
-      y: -0.5
+      x: -7.5,
+      y: 1
     }
   },
   {
@@ -363,8 +363,8 @@ export const CityMarkers = [
       y: 58
     },
     label_offset: {
-      x: -3,
-      y: 1
+      x: -7.5,
+      y: 0.5
     }
   },
   {
@@ -374,7 +374,7 @@ export const CityMarkers = [
       y: 63
     },
     label_offset: {
-      x: -3,
+      x: -7,
       y: 1
     }
   },
@@ -396,8 +396,8 @@ export const CityMarkers = [
       y: 40
     },
     label_offset: {
-      x: -3,
-      y: 1
+      x: 2,
+      y: 0
     }
   },
 ];
@@ -1203,7 +1203,7 @@ export const Routes = [
   },
   {
     start: "Sault St. Marie",
-    destination: "Toronto",
+    destination: "Montreal",
     color: Color.Black,
     path: [
       { x: 70.3, y: 18, angle: 89 },
@@ -1211,6 +1211,194 @@ export const Routes = [
       { x: 76.3, y: 18, angle: 89 },
       { x: 79.3, y: 18, angle: 89 },
       { x: 82.3, y: 18, angle: 89 },
+    ],
+  },
+  {
+    start: "Boston",
+    destination: "Montreal",
+    color: Color.Wild,
+    path: [
+      { x: 87, y: 20.5, angle: -45 },
+      { x: 89.3, y: 24.5, angle: -45 },
+    ],
+  },
+  {
+    start: "Boston",
+    destination: "Montreal",
+    color: Color.Wild,
+    path: [
+      { x: 88, y: 19, angle: -45 },
+      { x: 90.3, y: 23, angle: -45 },
+    ],
+  },
+  {
+    start: "New York",
+    destination: "Montreal",
+    color: Color.Blue,
+    path: [
+      { x: 84.6, y: 22.8, angle: 50 },
+      { x: 84, y: 27.4, angle: -10 },
+      { x: 86, y: 31, angle: -45 },
+    ],
+  },
+  {
+    start: "New York",
+    destination: "Boston",
+    color: Color.Red,
+    path: [
+      { x: 92.8, y: 29, angle: -45 },
+      { x: 91.7, y: 32.5, angle: 45 },
+    ],
+  },
+  {
+    start: "New York",
+    destination: "Boston",
+    color: Color.Yellow,
+    path: [
+      { x: 90.8, y: 29, angle: -45 },
+      { x: 89.7, y: 32.5, angle: 45 },
+    ],
+  },
+  {
+    start: "New York",
+    destination: "Pittsburgh",
+    color: Color.White,
+    path: [
+      { x: 81, y: 36, angle: 70 },
+      { x: 84, y: 34, angle: 70 },
+    ],
+  },
+  {
+    start: "New York",
+    destination: "Pittsburgh",
+    color: Color.Green,
+    path: [
+      { x: 81.5, y: 38.2, angle: 70 },
+      { x: 84.5, y: 36.2, angle: 70 },
+    ],
+  },
+  {
+    start: "Washington",
+    destination: "Pittsburgh",
+    color: Color.Wild,
+    path: [
+      { x: 81, y: 41, angle: -70 },
+      { x: 84, y: 43, angle: -70 },
+    ],
+  },
+  {
+    start: "Washington",
+    destination: "New York",
+    color: Color.Orange,
+    path: [
+      { x: 87, y: 36.6, angle: 10 },
+      { x: 86.5, y: 41.5, angle: 10 },
+    ],
+  },
+  {
+    start: "Washington",
+    destination: "New York",
+    color: Color.Black,
+    path: [
+      { x: 88.2, y: 36.8, angle: 10 },
+      { x: 87.8, y: 41.7, angle: 10 },
+    ],
+  },
+  {
+    start: "Washington",
+    destination: "Raleigh",
+    color: Color.Wild,
+    path: [
+      { x: 84.8, y: 46.8, angle: 45 },
+      { x: 82.6, y: 50.8, angle: 45 },
+    ],
+  },
+  {
+    start: "Washington",
+    destination: "Raleigh",
+    color: Color.Wild,
+    path: [
+      { x: 86.2, y: 48, angle: 45 },
+      { x: 84, y: 52, angle: 45 },
+    ],
+  },
+  {
+    start: "Nashville",
+    destination: "Pittsburgh",
+    color: Color.Yellow,
+    path: [
+      { x: 76.5, y: 43.5, angle: 55 },
+      { x: 74.3, y: 46.3, angle: 55 },
+      { x: 72, y: 49, angle: 55 },
+      { x: 70.8, y: 53, angle: 0 },
+    ],
+  },
+  {
+    start: "Nashville",
+    destination: "Raleigh",
+    color: Color.Black,
+    path: [
+      { x: 72.8, y: 53.8, angle: 35 },
+      { x: 75, y: 49.5, angle: 55 },
+      { x: 78, y: 49.5, angle: -60 },
+    ],
+  },
+  {
+    start: "New Orleans",
+    destination: "Atlanta",
+    color: Color.Yellow,
+    path: [
+      { x: 63.5, y: 73, angle: 55 },
+      { x: 66.5, y: 69.8, angle: 55 },
+      { x: 69.5, y: 66.6, angle: 55 },
+      { x: 72.5, y: 63.4, angle: 55 },
+    ],
+  },
+  {
+    start: "New Orleans",
+    destination: "Atlanta",
+    color: Color.Orange,
+    path: [
+      { x: 64.3, y: 74.5, angle: 60 },
+      { x: 67.3, y: 71.8, angle: 55 },
+      { x: 70.3, y: 68.7, angle: 55 },
+      { x: 73.3, y: 65.4, angle: 55 },
+    ],
+  },
+  {
+    start: "New Orleans",
+    destination: "Miami",
+    color: Color.Red,
+    path: [
+      { x: 63.5, y: 77.5, angle: 90 },
+      { x: 67, y: 77.5, angle: 90 },
+      { x: 70.5, y: 77.5, angle: 90 },
+      { x: 74, y: 78.3, angle: -70 },
+      { x: 77.5, y: 81.3, angle: -55 },
+      { x: 80.5, y: 85.3, angle: -45 },
+    ],
+  },
+  {
+    start: "Atlanta",
+    destination: "Miami",
+    color: Color.Blue,
+    path: [
+      { x: 76, y: 65, angle: -30 },
+      { x: 77.5, y: 69.5, angle: -30 },
+      { x: 79, y: 74, angle: -30 },
+      { x: 80.5, y: 78.5, angle: -30 },
+      { x: 82, y: 83, angle: -30 },
+    ],
+  },
+  {
+    start: "Atlanta",
+    destination: "Charleston",
+    color: Color.Pink,
+    path: [
+      { x: 81, y: 65, angle: 5 },
+      { x: 81, y: 71, angle: 0 },
+      { x: 82, y: 77, angle: -25 },
+      { x: 83.5, y: 83, angle: -20 },
     ],
   },
 ];
