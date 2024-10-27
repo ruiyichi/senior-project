@@ -61,14 +61,19 @@ import { createLobbyCode } from "./utils";
 import { MAX_ITER } from "./constants";
 import { WebsocketUser } from "./types/WebsocketUser";
 import { WebsocketLobby } from "./types/WebsocketLobby";
+import { Game } from "./classes/Game";
+import { Player } from "./classes/Player";
 
 function init_websocket_server() {
-	const socket_id_to_users = {} as Record<string, WebsocketUser>;
+	const socket_id_to_user = {} as Record<string, WebsocketUser>;
 	const lobby_id_to_lobby = {} as Record<string, WebsocketLobby>;
 	const player_id_to_lobby_id = {} as Record<string, string>;
+	const player_id_to_game_id = {} as Record<string, string>;
 
 	const io = new Server(3001, { cors: { origin: "http://localhost:5173" }});
 	console.log("Socket server running on port 3001");
+
+	const getSocketsInRoom = (room: string) => io.sockets.adapter.rooms.get(room);
 
 	const getSocketByID = (id: string) => io.sockets.sockets.get(id);
 
@@ -78,19 +83,19 @@ function init_websocket_server() {
 			jwt.verify(token, process.env.ACCESS_TOKEN_SECRET as Secret, (err, decoded: any) => {
 				if (err) return next(new Error('Authentication error'));
 				console.log(decoded.UserInfo)
-				socket_id_to_users[socket.id] = decoded.UserInfo as WebsocketUser;
+				socket_id_to_user[socket.id] = decoded.UserInfo as WebsocketUser;
 				next();
 			});
 		} else {
 			next(new Error('Authentication error'));
 		}
 	}).on("connection", socket => {
-		const user = socket_id_to_users[socket.id];
+		const user = socket_id_to_user[socket.id];
 		console.log(`Connected ${user.id}`);
 
 		const handleDisconnect = () => {
-			console.log(`Disconnected ${socket_id_to_users[socket.id].id}`);
-			delete socket_id_to_users[socket.id];
+			console.log(`Disconnected ${socket_id_to_user[socket.id].id}`);
+			delete socket_id_to_user[socket.id];
 			leaveLobby()
 		}
 
@@ -140,13 +145,13 @@ function init_websocket_server() {
 			lobby_id_to_lobby[lobby.code] = lobby;
 			player_id_to_lobby_id[user.id] = lobby.code;
 			socket.join(lobbyCode);
-			io.in(lobbyCode).emit("updateLobby", { ...lobby });
+			io.in(lobbyCode).emit("updateLobby", lobby);
 			emitLobbies();
 			callback(lobbyCode);
 		}
 
 		const emitLobbies = () => {
-			Object.keys(socket_id_to_users).forEach(socketId => getSocketByID(socketId)?.emit("updateLobbies", Object.values(lobby_id_to_lobby)));
+			Object.keys(socket_id_to_user).forEach(socketId => getSocketByID(socketId)?.emit("updateLobbies", Object.values(lobby_id_to_lobby)));
 		}
 
 		const joinLobby = (lobbyCode: string, callback: Function) => {
@@ -171,7 +176,37 @@ function init_websocket_server() {
 		}
 
 		const startGame = (callback: Function) => {
-			callback();
+			const lobby_id = player_id_to_lobby_id[user.id];
+			const lobby = lobby_id_to_lobby[lobby_id];
+
+			const players = lobby.players;
+			const game_players = players.map(p => new Player(p.id, p.username));
+			const game = new Game(game_players);
+
+			// map each player id to game
+			players.forEach(player => player_id_to_game_id[player.id] = game.id);
+
+			// remove each player from lobby socket
+			const lobby_socket_ids = getSocketsInRoom(lobby.code);
+			lobby_socket_ids?.forEach(socket_id => {
+				const socket = getSocketByID(socket_id);
+				const user = socket_id_to_user[socket_id];
+				// socket leave lobby
+				socket?.leave(lobby.code);
+				delete player_id_to_game_id[user.id];
+				// socket join game
+				socket?.join(game.id);
+			});
+
+			// delete lobby
+			delete lobby_id_to_lobby[lobby.code];
+		}
+
+		const proposeTicketCards = (players: Player[]) => {
+			// for player in players
+				// get proposed ticket cards
+				// create timer
+				// emit proposed cards to player socket
 		}
 
 		socket.on("disconnect", handleDisconnect);

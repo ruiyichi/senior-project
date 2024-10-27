@@ -7,3 +7,7 @@ export const createLobbyCode = (length: number) => {
   }
   return res;
 }
+
+export const randomElementFromArr = (arr: any[]) => {
+  return arr[Math.floor(Math.random() * arr.length)];
+}

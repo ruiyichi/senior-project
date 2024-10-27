@@ -1,4 +1,4 @@
-class Deck<T> {
+export class Deck<T> {
   cards: T[];
   discards: T[];
 

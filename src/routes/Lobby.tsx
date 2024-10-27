@@ -5,6 +5,7 @@ import { useSocket } from "../contexts/SocketContext";
 import BaseScreen from "../components/BaseScreen";
 import { useUser } from "../contexts/UserContext";
 import MenuButton from "../components/MenuButton";
+import { Crown } from 'lucide-react';
 
 const Lobby = () => {
 	const { lobby } = useLobby();
@@ -44,19 +45,18 @@ const Lobby = () => {
 						</div>
 					</div>
 					<div id='players-container'>
-						{is_host ?
-							<div>
-								You
-							</div>
+						<div>
+							<Crown />
+							{is_host ?
+								"You"
 							:
-							<div>
-								Host: {lobby.host.username}
-							</div>
-						}
+								`${lobby.host.username}`
+							}
+						</div>
 						{lobby.players.filter(p => p.id !== lobby.host.id).map(player => {
 							return (
 								<div key={player.id}>
-									{player.username}
+									{player.id === user.id ? "You" : player.username}
 								</div>
 							)
 						})}

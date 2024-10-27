@@ -1,5 +1,5 @@
 import { NUM_TRAIN_CARS } from "../constants";
-import { Route } from "./Route";
+import { Route, TicketCard, TrainCarCard } from "../types";
 
 export class Player {
   id: string;
