@@ -330,7 +330,11 @@ button {
       }
 
       .city-marker-label {
+        transform: translateZ(0);
+        backface-visibility: hidden;
         font-size: 0.78vw;
+        user-select: none;
+        z-index: 1;
       }
     }
 
