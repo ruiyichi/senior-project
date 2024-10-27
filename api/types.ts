@@ -1,13 +1,13 @@
 export enum Color {
-  Pink,
-  White,
-  Blue,
-  Yellow,
-  Orange,
-  Black,
-  Red,
-  Green,
-  Wild
+  Pink = "pink",
+  White = "white",
+  Blue = "blue",
+  Yellow = "yellow",
+  Orange = "orange",
+  Black = "black",
+  Red = "red",
+  Green = "green",
+  Wild = "gray"
 };
 
 export type TicketCard = {
