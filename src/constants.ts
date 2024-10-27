@@ -11,7 +11,7 @@ export const CityMarkers = [
       y: 60
     },
     label_offset: {
-      x: -4.5,
+      x: -7,
       y: 1.5
     }
   },
@@ -198,8 +198,8 @@ export const CityMarkers = [
       y: 79
     },
     label_offset: {
-      x: 1,
-      y: -0.5
+      x: 0,
+      y: 1.5
     }
   },
   {
@@ -209,8 +209,8 @@ export const CityMarkers = [
       y: 70
     },
     label_offset: {
-      x: 1,
-      y: -0.5
+      x: -3,
+      y: 4
     }
   },
   {
@@ -260,11 +260,11 @@ export const CityMarkers = [
   {
     name: "Duluth",
     marker_position: {
-      x: 55.3,
-      y: 28.5
+      x: 56,
+      y: 29.5
     },
     label_offset: {
-      x: -3,
+      x: -6.5,
       y: 1
     }
   },
@@ -275,8 +275,8 @@ export const CityMarkers = [
       y: 46
     },
     label_offset: {
-      x: -3,
-      y: 1
+      x: -5,
+      y: -7
     }
   },
   {
@@ -297,7 +297,7 @@ export const CityMarkers = [
       y: 42
     },
     label_offset: {
-      x: -3,
+      x: -4.5,
       y: 1
     }
   },
@@ -308,15 +308,15 @@ export const CityMarkers = [
       y: 50
     },
     label_offset: {
-      x: -3,
-      y: 1
+      x: -9,
+      y: -1.5
     }
   },
   {
     name: "Oklahoma City",
     marker_position: {
-      x: 49,
-      y: 60
+      x: 48.3,
+      y: 61
     },
     label_offset: {
       x: -3,
@@ -352,8 +352,8 @@ export const CityMarkers = [
       y: 53
     },
     label_offset: {
-      x: -3,
-      y: 1
+      x: 4.5,
+      y: -0.5
     }
   },
   {
@@ -385,8 +385,8 @@ export const CityMarkers = [
       y: 41.5
     },
     label_offset: {
-      x: -3,
-      y: 1
+      x: -6,
+      y: 2
     }
   },
   {
@@ -705,6 +705,512 @@ export const Routes = [
       { x: 39.8, y: 17.4, angle: 63 },
       { x: 42.8, y: 15, angle: 63 },
       { x: 45.8, y: 12.5, angle: 63 },
+    ],
+  },
+  {
+    start: "El Paso",
+    destination: "Dallas",
+    color: Color.Red,
+    path: [
+      { x: 34, y: 69, angle: 90 },
+      { x: 38, y: 69, angle: 90 },
+      { x: 42, y: 69, angle: 90 },
+      { x: 46, y: 69, angle: 90 },
+    ],
+  },
+  {
+    start: "Houston",
+    destination: "Dallas",
+    color: Color.Wild,
+    path: [
+      { x: 51.3, y: 73.5, angle: -30 },
+    ],
+  },
+  {
+    start: "Houston",
+    destination: "Dallas",
+    color: Color.Wild,
+    path: [
+      { x: 50.2, y: 74.3, angle: -30 },
+    ],
+  },
+  {
+    start: "El Paso",
+    destination: "Houston",
+    color: Color.Green,
+    path: [
+      { x: 32, y: 71.5, angle: -50 },
+      { x: 35, y: 75, angle: -60 },
+      { x: 38.5, y: 77.5, angle: -75 },
+      { x: 42, y: 79, angle: 100 },
+      { x: 46, y: 79.5, angle: 90 },
+      { x: 50, y: 79, angle: 80 },
+    ],
+  },
+  {
+    start: "El Paso",
+    destination: "Los Angeles",
+    color: Color.Black,
+    path: [
+      { x: 12, y: 62, angle: -40 },
+      { x: 14.7, y: 66.2, angle: -50 },
+      { x: 18, y: 69, angle: -75 },
+      { x: 21.5, y: 70.5, angle: 100 },
+      { x: 25, y: 71, angle: 90 },
+      { x: 28.5, y: 70.5, angle: 80 },
+    ],
+  },
+  {
+    start: "Houston",
+    destination: "New Orleans",
+    color: Color.Wild,
+    path: [
+      { x: 55, y: 76.5, angle: 85 },
+      { x: 58.5, y: 76, angle: 85 },
+    ],
+  },
+  {
+    start: "Oklahoma City",
+    destination: "Dallas",
+    color: Color.Wild,
+    path: [
+      { x: 47.5, y: 66.5, angle: -40 },
+      { x: 47, y: 61.5, angle: 30 },
+    ],
+  },
+  {
+    start: "Oklahoma City",
+    destination: "Dallas",
+    color: Color.Wild,
+    path: [
+      { x: 49, y: 66, angle: -40 },
+      { x: 48.5, y: 61.5, angle: 30 },
+    ],
+  },
+  {
+    start: "Oklahoma City",
+    destination: "El Paso",
+    color: Color.Yellow,
+    path: [
+      { x: 33.5, y: 66.3, angle: 70 },
+      { x: 37, y: 65, angle: 80 },
+      { x: 40.5, y: 63, angle: 65 },
+      { x: 43.5, y: 60, angle: 60 },
+      { x: 46.5, y: 58, angle: 80 },
+    ],
+  },
+  {
+    start: "Santa Fe",
+    destination: "Oklahoma City",
+    color: Color.Blue,
+    path: [
+      { x: 35.5, y: 58, angle: 90 },
+      { x: 39.5, y: 57.5, angle: 80 },
+      { x: 43.5, y: 56.5, angle: 90 },
+    ],
+  },
+  {
+    start: "Denver",
+    destination: "Oklahoma City",
+    color: Color.Red,
+    path: [
+      { x: 36.5, y: 49, angle: -30 },
+      { x: 39.3, y: 52.5, angle: -70 },
+      { x: 42.8, y: 54, angle: 90 },
+      { x: 46.5, y: 55.2, angle: -60 },
+    ],
+  },
+  {
+    start: "Denver",
+    destination: "Omaha",
+    color: Color.Pink,
+    path: [
+      { x: 37, y: 43, angle: 60 },
+      { x: 40.7, y: 40.5, angle: 80 },
+      { x: 44.5, y: 40, angle: 90 },
+      { x: 48.5, y: 40, angle: 90 },
+    ],
+  },
+  {
+    start: "Kansas City",
+    destination: "Omaha",
+    color: Color.Wild,
+    path: [
+      { x: 50.5, y: 44.5, angle: -10 },
+    ],
+  },
+  {
+    start: "Kansas City",
+    destination: "Omaha",
+    color: Color.Wild,
+    path: [
+      { x: 51.8, y: 44.3, angle: -10 },
+    ],
+  },
+  {
+    start: "Kansas City",
+    destination: "Oklahoma City",
+    color: Color.Wild,
+    path: [
+      { x: 51.5, y: 51.7, angle: 10 },
+      { x: 50.4, y: 56.7, angle: 30 },
+    ],
+  },
+  {
+    start: "Kansas City",
+    destination: "Oklahoma City",
+    color: Color.Wild,
+    path: [
+      { x: 50.2, y: 51, angle: 10 },
+      { x: 49, y: 56.2, angle: 30 },
+    ],
+  },
+  {
+    start: "Kansas City",
+    destination: "Denver",
+    color: Color.Black,
+    path: [
+      { x: 39.2, y: 44, angle: 70 },
+      { x: 42.2, y: 43, angle: 90 },
+      { x: 45.2, y: 43.5, angle: 100 },
+      { x: 48.2, y: 45.5, angle: 120 },
+    ],
+  },
+  {
+    start: "Kansas City",
+    destination: "Denver",
+    color: Color.Orange,
+    path: [
+      { x: 38, y: 47.3, angle: -60 },
+      { x: 41, y: 49.8, angle: -70 },
+      { x: 44.5, y: 51, angle: 90 },
+      { x: 48, y: 50, angle: 60 },
+    ],
+  },
+  {
+    start: "Helena",
+    destination: "Omaha",
+    color: Color.Red,
+    path: [
+      { x: 37, y: 24, angle: -58 },
+      { x: 40, y: 27, angle: -58 },
+      { x: 43, y: 30.2, angle: -58 },
+      { x: 46, y: 33.5, angle: -58 },
+      { x: 49, y: 37, angle: -58 },
+    ],
+  },
+  {
+    start: "Helena",
+    destination: "Duluth",
+    color: Color.Orange,
+    path: [
+      { x: 38.5, y: 22.3, angle: 100 },
+      { x: 41.5, y: 23.3, angle: 100 },
+      { x: 44.5, y: 24.3, angle: 100 },
+      { x: 47.5, y: 25.3, angle: 100 },
+      { x: 50.5, y: 26.3, angle: 100 },
+      { x: 53.5, y: 27.3, angle: 100 },
+    ],
+  },
+  {
+    start: "Winnipeg",
+    destination: "Duluth",
+    color: Color.Black,
+    path: [
+      { x: 54.5, y: 25, angle: -70 },
+      { x: 51.5, y: 23.4, angle: -80 },
+      { x: 49, y: 19.8, angle: -30 },
+      { x: 48.5, y: 14, angle: 0 },
+    ],
+  },
+  {
+    start: "Sault St. Marie",
+    destination: "Duluth",
+    color: Color.Wild,
+    path: [
+      { x: 58, y: 26, angle: 70 },
+      { x: 62, y: 23.5, angle: 70 },
+      { x: 66, y: 21, angle: 70 },
+    ],
+  },
+  {
+    start: "Sault St. Marie",
+    destination: "Toronto",
+    color: Color.Wild,
+    path: [
+      { x: 71, y: 21, angle: -60 },
+      { x: 74.5, y: 24.5, angle: -60 },
+    ],
+  },
+  {
+    start: "Duluth",
+    destination: "Toronto",
+    color: Color.Pink,
+    path: [
+      { x: 58.5, y: 28.5, angle: 90 },
+      { x: 61.7, y: 28.5, angle: 90 },
+      { x: 64.9, y: 28.5, angle: 90 },
+      { x: 68.1, y: 28.5, angle: 90 },
+      { x: 71.3, y: 28.5, angle: 90 },
+      { x: 74.5, y: 28.5, angle: 90 },
+    ],
+  },
+  {
+    start: "Duluth",
+    destination: "Omaha",
+    color: Color.Wild,
+    path: [
+      { x: 55.5, y: 31.5, angle: 30 },
+      { x: 53.5, y: 37, angle: 33 },
+    ],
+  },
+  {
+    start: "Duluth",
+    destination: "Omaha",
+    color: Color.Wild,
+    path: [
+      { x: 53.5, y: 31.5, angle: 30 },
+      { x: 51.8, y: 36.5, angle: 33 },
+    ],
+  },
+  {
+    start: "Chicago",
+    destination: "Omaha",
+    color: Color.Blue,
+    path: [
+      { x: 53, y: 40.5, angle: 90 },
+      { x: 56.3, y: 40.5, angle: 90 },
+      { x: 59.6, y: 40.5, angle: 90 },
+      { x: 62.9, y: 40.5, angle: 90 },
+    ],
+  },
+  {
+    start: "Chicago",
+    destination: "Duluth",
+    color: Color.Red,
+    path: [
+      { x: 57.2, y: 30, angle: -55 },
+      { x: 60.2, y: 33.5, angle: -55 },
+      { x: 63.2, y: 37, angle: -55 },
+    ],
+  },
+  {
+    start: "Chicago",
+    destination: "Saint Louis",
+    color: Color.White,
+    path: [
+      { x: 65, y: 44.5, angle: 35 },
+      { x: 63, y: 48.5, angle: 40 },
+    ],
+  },
+  {
+    start: "Chicago",
+    destination: "Saint Louis",
+    color: Color.Green,
+    path: [
+      { x: 63.5, y: 44, angle: 35 },
+      { x: 61.5, y: 47.8, angle: 40 },
+    ],
+  },
+  {
+    start: "Kansas City",
+    destination: "Saint Louis",
+    color: Color.Blue,
+    path: [
+      { x: 54.5, y: 48.5, angle: 90 },
+      { x: 58, y: 49, angle: 100 },
+    ],
+  },
+  {
+    start: "Kansas City",
+    destination: "Saint Louis",
+    color: Color.Pink,
+    path: [
+      { x: 54.5, y: 50.5, angle: 90 },
+      { x: 58, y: 51, angle: 100 },
+    ],
+  },
+  {
+    start: "Nashville",
+    destination: "Saint Louis",
+    color: Color.Wild,
+    path: [
+      { x: 64, y: 53, angle: 110 },
+      { x: 68, y: 55, angle: 105 },
+    ],
+  },
+  {
+    start: "Little Rock",
+    destination: "Saint Louis",
+    color: Color.Wild,
+    path: [
+      { x: 59.5, y: 55, angle: 40 },
+      { x: 57.5, y: 59, angle: 40 },
+    ],
+  },
+  {
+    start: "Little Rock",
+    destination: "Oklahoma City",
+    color: Color.Wild,
+    path: [
+      { x: 51, y: 60.5, angle: 100 },
+      { x: 54, y: 61.5, angle: 100 },
+    ],
+  },
+  {
+    start: "Little Rock",
+    destination: "Dallas",
+    color: Color.Wild,
+    path: [
+      { x: 51.5, y: 68.5, angle: 55 },
+      { x: 54, y: 65.5, angle: 50 },
+    ],
+  },
+  {
+    start: "Little Rock",
+    destination: "New Orleans",
+    color: Color.Green,
+    path: [
+      { x: 57.5, y: 64.5, angle: -35 },
+      { x: 59.2, y: 68.5, angle: -35 },
+      { x: 60.8, y: 72.5, angle: -35 },
+    ],
+  },
+  {
+    start: "Little Rock",
+    destination: "Nashville",
+    color: Color.White,
+    path: [
+      { x: 59.5, y: 62, angle: 90 },
+      { x: 64.2, y: 62, angle: 90 },
+      { x: 68.5, y: 60, angle: 45 },
+    ],
+  },
+  {
+    start: "Atlanta",
+    destination: "Nashville",
+    color: Color.Wild,
+    path: [
+      { x: 72.5, y: 58.7, angle: -45 },
+    ],
+  },
+  {
+    start: "Saint Louis",
+    destination: "Pittsburgh",
+    color: Color.Green,
+    path: [
+      { x: 65, y: 49.5, angle: 70 },
+      { x: 67.8, y: 47.5, angle: 66 },
+      { x: 70.5, y: 45.3, angle: 62 },
+      { x: 73.2, y: 42.8, angle: 62 },
+      { x: 76, y: 40.5, angle: 62 },
+    ],
+  },
+  {
+    start: "Toronto",
+    destination: "Pittsburgh",
+    color: Color.Wild,
+    path: [
+      { x: 78, y: 35, angle: 0 },
+      { x: 78, y: 30, angle: 0 },
+    ],
+  },
+  {
+    start: "Atlanta",
+    destination: "Charleston",
+    color: Color.Wild,
+    path: [
+      { x: 76.2, y: 61.3, angle: 90 },
+      { x: 79, y: 61.3, angle: 90 },
+    ],
+  },
+  {
+    start: "Raleigh",
+    destination: "Charleston",
+    color: Color.Wild,
+    path: [
+      { x: 82.2, y: 59.3, angle: 45 },
+      { x: 83.2, y: 55.4, angle: -45 },
+    ],
+  },
+  {
+    start: "Raleigh",
+    destination: "Atlanta",
+    color: Color.Wild,
+    path: [
+      { x: 77, y: 58, angle: 55 },
+      { x: 79.5, y: 55.3, angle: 55 },
+    ],
+  },
+  {
+    start: "Raleigh",
+    destination: "Atlanta",
+    color: Color.Wild,
+    path: [
+      { x: 76.2, y: 56.6, angle: 55 },
+      { x: 78.8, y: 53.5, angle: 55 },
+    ],
+  },
+  {
+    start: "Raleigh",
+    destination: "Pittsburgh",
+    color: Color.Wild,
+    path: [
+      { x: 78.8, y: 42.6, angle: -20 },
+      { x: 80, y: 48, angle: -20 },
+    ],
+  },
+  {
+    start: "Chicago",
+    destination: "Pittsburgh",
+    color: Color.Orange,
+    path: [
+      { x: 67.5, y: 38, angle: 70 },
+      { x: 71.5, y: 36.5, angle: 85 },
+      { x: 75.5, y: 36.5, angle: 100 },
+    ],
+  },
+  {
+    start: "Chicago",
+    destination: "Pittsburgh",
+    color: Color.Black,
+    path: [
+      { x: 67.5, y: 42, angle: 105 },
+      { x: 70.8, y: 41.5, angle: 70 },
+      { x: 74, y: 39.5, angle: 70 },
+    ],
+  },
+  {
+    start: "Chicago",
+    destination: "Toronto",
+    color: Color.White,
+    path: [
+      { x: 65.7, y: 36, angle: 20 },
+      { x: 68.5, y: 33.3, angle: 90 },
+      { x: 72, y: 33.3, angle: 90 },
+      { x: 75.5, y: 32, angle: 45 },
+    ],
+  },
+  {
+    start: "Montreal",
+    destination: "Toronto",
+    color: Color.Wild,
+    path: [
+      { x: 79, y: 25.2, angle: 58 },
+      { x: 81.4, y: 22.6, angle: 58 },
+      { x: 83.8, y: 20, angle: 58 },
+    ],
+  },
+  {
+    start: "Sault St. Marie",
+    destination: "Toronto",
+    color: Color.Black,
+    path: [
+      { x: 70.3, y: 18, angle: 89 },
+      { x: 73.3, y: 18, angle: 89 },
+      { x: 76.3, y: 18, angle: 89 },
+      { x: 79.3, y: 18, angle: 89 },
+      { x: 82.3, y: 18, angle: 89 },
     ],
   },
 ];
