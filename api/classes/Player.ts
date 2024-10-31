@@ -9,6 +9,7 @@ export class Player {
   points: number;
   routes: Route[];
   numTrainCars: number;
+  proposedTicketCards: TicketCard[];
 
   constructor(id: string, username: string) {
     this.id = id;
@@ -18,5 +19,18 @@ export class Player {
     this.points = 0;
     this.routes = [];
     this.numTrainCars = NUM_TRAIN_CARS;
+    this.proposedTicketCards = [];
+  }
+
+  getSanitizedPlayer() {
+    return {
+      id: this.id,
+      username: this.username,
+      numTrainCarCards: this.trainCarCards.length,
+      numTicketCards: this.ticketCards.length,
+      points: this.points,
+      routes: this.routes,
+      numTrainCars: this.numTrainCars,
+    };
   }
 }

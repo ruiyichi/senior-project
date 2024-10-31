@@ -6,11 +6,14 @@ import BaseScreen from "../components/BaseScreen";
 import { useUser } from "../contexts/UserContext";
 import MenuButton from "../components/MenuButton";
 import { Crown } from 'lucide-react';
+import { useGame } from "../contexts/GameContext";
+import { GameStatus } from "../../api/classes/Game";
 
 const Lobby = () => {
 	const { lobby } = useLobby();
 	const { socketRef } = useSocket();
 	const { user } = useUser();
+	const { game } = useGame();
 
 	const navigate = useNavigate();
 
@@ -18,7 +21,11 @@ const Lobby = () => {
 		if (Object.keys(lobby).length === 0) {
 			navigate('/');
 		}
-	});
+		
+		if (game.status === GameStatus.IN_PROGRESS) {
+			navigate('/game');
+		}
+	}, [game]);
 
 	useEffect(() => {
 		return () => {

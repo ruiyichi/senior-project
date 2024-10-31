@@ -69,11 +69,12 @@ function init_websocket_server() {
 	const lobby_id_to_lobby = {} as Record<string, WebsocketLobby>;
 	const player_id_to_lobby_id = {} as Record<string, string>;
 	const player_id_to_game_id = {} as Record<string, string>;
+	const game_id_to_game = {} as Record<string, Game>;
 
 	const io = new Server(3001, { cors: { origin: "http://localhost:5173" }});
 	console.log("Socket server running on port 3001");
 
-	const getSocketsInRoom = (room: string) => io.sockets.adapter.rooms.get(room);
+	const getSocketIdsInRoom = (room: string) => io.sockets.adapter.rooms.get(room);
 
 	const getSocketByID = (id: string) => io.sockets.sockets.get(id);
 
@@ -100,7 +101,6 @@ function init_websocket_server() {
 		}
 
 		const leaveLobby = () => {
-			console.log(`${user.username} leave lobby`)
 			const lobby_id = player_id_to_lobby_id[user.id];
 			if (!lobby_id) return;
 
@@ -151,7 +151,30 @@ function init_websocket_server() {
 		}
 
 		const emitLobbies = () => {
-			Object.keys(socket_id_to_user).forEach(socketId => getSocketByID(socketId)?.emit("updateLobbies", Object.values(lobby_id_to_lobby)));
+			const all_socket_ids = Object.keys(socket_id_to_user);
+			all_socket_ids.forEach(socketId => getSocketByID(socketId)?.emit("updateLobbies", Object.values(lobby_id_to_lobby)));
+		}
+
+		const emitGameToAllClients = (game_id: string) => {
+			const sockets_in_game = getSocketIdsInRoom(game_id);
+			const game = game_id_to_game[game_id];
+			if (!game) return;
+			sockets_in_game?.forEach(socket_id => getSocketByID(socket_id)?.emit("updateGame", game.getSanitizedGame()));
+			sockets_in_game?.forEach(socket_id => {
+				const user = socket_id_to_user[socket_id];
+				const player = game.getPlayerFromId(user.id);
+				getSocketByID(socket_id)?.emit("updatePlayer", player?.getSanitizedPlayer());
+			});
+		}
+
+		const emitGame = () => {
+			const game_id = player_id_to_game_id[user.id];
+			if (!game_id) return;
+
+			const game = game_id_to_game[game_id];
+			if (!game) return;
+
+			socket.emit("updateGame", game.getSanitizedGame());
 		}
 
 		const joinLobby = (lobbyCode: string, callback: Function) => {
@@ -175,7 +198,10 @@ function init_websocket_server() {
 			callback(status);
 		}
 
-		const startGame = (callback: Function) => {
+		const startGame = () => {
+			// user is already in a game
+			if (player_id_to_game_id[user.id]) return;
+			
 			const lobby_id = player_id_to_lobby_id[user.id];
 			const lobby = lobby_id_to_lobby[lobby_id];
 
@@ -183,30 +209,39 @@ function init_websocket_server() {
 			const game_players = players.map(p => new Player(p.id, p.username));
 			const game = new Game(game_players);
 
+			game_id_to_game[game.id] = game;
+
 			// map each player id to game
 			players.forEach(player => player_id_to_game_id[player.id] = game.id);
 
 			// remove each player from lobby socket
-			const lobby_socket_ids = getSocketsInRoom(lobby.code);
+			const lobby_socket_ids = getSocketIdsInRoom(lobby.code);
 			lobby_socket_ids?.forEach(socket_id => {
 				const socket = getSocketByID(socket_id);
 				const user = socket_id_to_user[socket_id];
 				// socket leave lobby
 				socket?.leave(lobby.code);
-				delete player_id_to_game_id[user.id];
+				delete socket_id_to_user[user.id];
 				// socket join game
 				socket?.join(game.id);
 			});
 
 			// delete lobby
 			delete lobby_id_to_lobby[lobby.code];
+			
+			console.log(lobby_id_to_lobby)
+			console.log(player_id_to_lobby_id);
+			game.startGame();
+			emitGameToAllClients(game.id);
 		}
 
-		const proposeTicketCards = (players: Player[]) => {
-			// for player in players
-				// get proposed ticket cards
-				// create timer
-				// emit proposed cards to player socket
+		const handleSocketConnect = () => {
+			console.log('on socket connect')
+			if (player_id_to_game_id[user.id] !== undefined) {
+				emitGame();
+			} else {
+				emitLobbies();
+			}
 		}
 
 		socket.on("disconnect", handleDisconnect);
@@ -217,7 +252,7 @@ function init_websocket_server() {
 		socket.on("startGame", startGame);
 
 		// Send on connect
-		emitLobbies();
+		handleSocketConnect();
 	});
 }
 

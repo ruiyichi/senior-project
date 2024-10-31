@@ -56,7 +56,11 @@ export const NUM_STARTING_TRAIN_CAR_CARDS = 4;
 
 export const NUM_PROPOSED_TICKET_CARDS = 3;
 
+export const NUM_FACE_UP_TRAIN_CAR_CARDS = 5;
+
 export const NUM_TRAIN_CARS = 45;
+
+export const TURN_TIMER = 45;
 
 export const TRAIN_ROUTES = [
   {

@@ -15,7 +15,6 @@ const LobbiesContext = createContext({} as LobbiesContextValue);
 
 export const LobbiesProvider = ({ children }: { children: React.ReactNode }) => {
   const lobbiesReducer: React.Reducer<WebsocketLobby[], LobbiesAction> = (lobbies: WebsocketLobby[], action: LobbiesAction) => {
-		console.log(lobbies)
 		switch (action.type) {
 			case 'update':
 				return [...action.payload];
