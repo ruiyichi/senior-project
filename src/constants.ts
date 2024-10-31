@@ -1,4 +1,13 @@
 import { Color } from "../api/types";
+import RedTrainCarCard from "./assets/train_car_cards/red.jpg";
+import BlackTrainCarCard from "./assets/train_car_cards/black.jpg";
+import WhiteTrainCarCard from "./assets/train_car_cards/white.jpg";
+import WildTrainCarCard from "./assets/train_car_cards/wild.jpg";
+import PinkTrainCarCard from "./assets/train_car_cards/pink.jpg";
+import YellowTrainCarCard from "./assets/train_car_cards/yellow.jpg";
+import GreenTrainCarCard from "./assets/train_car_cards/green.jpg";
+import BlueTrainCarCard from "./assets/train_car_cards/blue.jpg";
+import OrangeTrainCarCard from "./assets/train_car_cards/orange.jpg";
 
 export const SERVER_URI = import.meta.env.VITE_NODE_ENV === "development" ? import.meta.env.VITE_DEV_SERVER_URI : import.meta.env.VITE_PROD_SERVER_URI;
 export const SOCKET_SERVER_URI = import.meta.env.VITE_NODE_ENV === "development" ? import.meta.env.VITE_DEV_SOCKET_SERVER_URI : import.meta.env.VITE_PROD_SOCKET_SERVER_URI;
@@ -1402,3 +1411,15 @@ export const Routes = [
     ],
   },
 ];
+
+export const TrainCarCardColorToImage = {
+  [Color.Red]: RedTrainCarCard,
+  [Color.Black]: BlackTrainCarCard,
+  [Color.White]: WhiteTrainCarCard,
+  [Color.Wild]: WildTrainCarCard,
+  [Color.Pink]: PinkTrainCarCard,
+  [Color.Yellow]: YellowTrainCarCard,
+  [Color.Green]: GreenTrainCarCard,
+  [Color.Blue]: BlueTrainCarCard,
+  [Color.Orange]: OrangeTrainCarCard
+};

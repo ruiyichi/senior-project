@@ -312,14 +312,15 @@ button {
 
 #game-container {
   display: flex;
-  flex-direction: column;
   width: 100%;
   height: 100%;
 
-  #top-container {
+  #left-side-container {
     display: flex;
+    flex-direction: column;
 
     #map-container {
+      border-top: .8vh solid black;
       width: 75vw;
       position: relative;
 
@@ -337,24 +338,20 @@ button {
       }
     }
 
-    #game-info-container {
+    #bottom-bar-container {
+      border-top: .8vh solid black;
+      border-bottom: .8vh solid black;
       background-color: rgb(87, 28, 1);
       flex-grow: 1;
     }
   }
   
-  #bottom-container {
+  #right-side-container {
     flex-grow: 1;
-    display: flex;
-
-    #current-player-info-container {
-      width: 75vw;
-      background-color: rgb(73, 73, 91);
-    }
-
-    #other-players-container {
-      flex-grow: 1;
-      background-color: rgb(201, 109, 66);
-    }
+    overflow-y: auto;
+    background-color: rgb(87, 28, 1);
+    border-top: .8vh solid black;
+    border-bottom: .8vh solid black;
+    border-left: .8vh solid black;
   }
 }
