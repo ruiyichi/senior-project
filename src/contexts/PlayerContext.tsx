@@ -4,7 +4,7 @@ import { Player } from "../../types/Player";
 const PlayerContext = createContext({} as PlayerContextValue);
 
 type PlayerContextValue = { 
-	Player: Player,
+	player: Player,
 	updatePlayer: React.Dispatch<any>,
 };
 
@@ -21,12 +21,13 @@ const defaultPlayer = {
 
 export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 	const PlayerReducer = (Player: Player, payload: Player) => {
+		console.log(payload);
 		return { ...Player, ...payload };
 	}
-	const [Player, updatePlayer] = useReducer(PlayerReducer, defaultPlayer);
+	const [player, updatePlayer] = useReducer(PlayerReducer, defaultPlayer);
 
 	const value: PlayerContextValue = { 
-		Player,
+		player,
 		updatePlayer
 	};
 

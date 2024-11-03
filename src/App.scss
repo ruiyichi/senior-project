@@ -339,6 +339,11 @@ button {
     }
 
     #bottom-bar-container {
+      position: relative;
+      align-items: center;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
       border-top: .8vh solid black;
       border-bottom: .8vh solid black;
       background-color: rgb(87, 28, 1);

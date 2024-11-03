@@ -160,10 +160,21 @@ function init_websocket_server() {
 			const game = game_id_to_game[game_id];
 			if (!game) return;
 			sockets_in_game?.forEach(socket_id => getSocketByID(socket_id)?.emit("updateGame", game.getSanitizedGame()));
+		}
+
+		const emitRespectivePlayers = () => {
+			console.log(player_id_to_game_id);
+			console.log(socket_id_to_user);
+			const game_id = player_id_to_game_id[user.id];
+			if (!game_id) return;
+
+			const game = game_id_to_game[game_id];
+			if (!game) return;
+
+			const sockets_in_game = getSocketIdsInRoom(game.id);
 			sockets_in_game?.forEach(socket_id => {
-				const user = socket_id_to_user[socket_id];
-				const player = game.getPlayerFromId(user.id);
-				getSocketByID(socket_id)?.emit("updatePlayer", player?.getSanitizedPlayer());
+				const player = socket_id_to_user[socket_id];
+				getSocketByID(socket_id)?.emit("updatePlayer", game.players.find(p => p.id === player.id));
 			});
 		}
 
@@ -221,7 +232,7 @@ function init_websocket_server() {
 				const user = socket_id_to_user[socket_id];
 				// socket leave lobby
 				socket?.leave(lobby.code);
-				delete socket_id_to_user[user.id];
+				delete player_id_to_lobby_id[user.id];
 				// socket join game
 				socket?.join(game.id);
 			});
@@ -233,12 +244,17 @@ function init_websocket_server() {
 			console.log(player_id_to_lobby_id);
 			game.startGame();
 			emitGameToAllClients(game.id);
+			emitRespectivePlayers();
 		}
 
 		const handleSocketConnect = () => {
 			console.log('on socket connect')
-			if (player_id_to_game_id[user.id] !== undefined) {
+			const game_id = player_id_to_game_id[user.id];
+			if (game_id !== undefined) {
+				const game = game_id_to_game[game_id];
+				socket.join(game.id);
 				emitGame();
+				emitRespectivePlayers();
 			} else {
 				emitLobbies();
 			}
