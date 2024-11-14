@@ -163,8 +163,6 @@ function init_websocket_server() {
 		}
 
 		const emitRespectivePlayers = () => {
-			console.log(player_id_to_game_id);
-			console.log(socket_id_to_user);
 			const game_id = player_id_to_game_id[user.id];
 			if (!game_id) return;
 
@@ -260,12 +258,25 @@ function init_websocket_server() {
 			}
 		}
 
+		const selectTicketCards = (ticketCardIds: string[]) => {
+			const game_id = player_id_to_game_id[user.id];
+			if (!game_id) return;
+
+			const game = game_id_to_game[game_id];
+			if (!game) return;
+
+			game.keepTicketCards(user.id, ticketCardIds);
+			emitGameToAllClients(game.id);
+			emitRespectivePlayers();
+		}
+
 		socket.on("disconnect", handleDisconnect);
 		socket.on("createLobby", createLobby);
 		socket.on("emitLobbies", emitLobbies);
 		socket.on("joinLobby", joinLobby);
 		socket.on("leaveLobby", leaveLobby);
 		socket.on("startGame", startGame);
+		socket.on("selectTicketCards", selectTicketCards)
 
 		// Send on connect
 		handleSocketConnect();

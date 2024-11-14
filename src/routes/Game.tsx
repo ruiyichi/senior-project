@@ -1,7 +1,3 @@
-import CityMarker from "../components/CityMarker";
-import { CityMarkers, Routes } from "../constants";
-import mapBackground from "../assets/map.jpg";
-import RouteBox from "../components/RouteBox";
 import { useGame } from "../contexts/GameContext";
 import TrainCarCard from "../components/TrainCarCard";
 import TrainCarCardDeckPlaceholder from "../components/TrainCarCardDeckPlaceholder";
@@ -9,40 +5,74 @@ import TicketCardDeckPlaceholder from "../components/TicketCardDeckPlaceholder";
 import { usePlayer } from "../contexts/PlayerContext";
 import { UserImage } from "../components/UserImage";
 import { useUser } from "../contexts/UserContext";
+import Map from "../components/Map";
+import TicketCardSelection from "../components/TicketCardSelection";
+import TicketCard from "../components/TicketCard";
 
 const Game = () => {
   const { game } = useGame();
   const { player } = usePlayer();
   const { user } = useUser();
 
-  console.log(player)
+  const getStatusMessage = () => {
+    if (player.proposedTicketCards.length > 0) {
+      return 'Select ticket cards';
+    } else {
+      const activePlayer = game.players.find(p => p.id === game.activePlayerId);
+      if (activePlayer) {
+        return `Player ${activePlayer.username}'s turn!`;
+      }
+    }
+  }
+
+  const trainCarCardsGroupedByColor = player.trainCarCards.reduce((acc, item) => {
+    const key = item.color;
+  
+    if (!acc[key]) {
+      acc[key] = [];
+    }
+  
+    acc[key].push(item);
+  
+    return acc;
+  }, {});
 
   return (
     <div id='game-container'>
-      <div id='left-side-container'>
+      <div id='left-container'>
+        
+      </div>
+      <div id='middle-container'>
         <div id='map-container'>
-          <img id='map-image' src={mapBackground} />
-            {CityMarkers.map(marker => {
-              return (
-                <CityMarker marker_position={marker.marker_position} label={marker.name} label_offset={marker.label_offset} />
-              )
-            })}
-            {Routes.map(route => {
-              return route.path.map(path => <RouteBox route_position={{ x: path.x, y: path.y }} color={route.color} angle={path.angle} />);
-            })}
+          <div style={{ position: 'absolute', zIndex: 1, left: '0%', bottom: '0%', fontSize: '28px', backgroundColor: 'white', width: '100%', textAlign: 'center' }}>
+            {getStatusMessage()}
+          </div>
+          <Map />
         </div>
   
         <div id='bottom-bar-container'>
-          <div style={{ position: 'absolute', right: 0, top: 0 }}>
-            <UserImage user={user} label={"YOU"} size={40} />
-          </div>
-          <div style={{ display: 'flex', gap: '1vw' }}>
-            {player.trainCarCards.map(c => {
-              return (
-                <TrainCarCard key={c.id} color={c.color} orientation="vertical" size={12} />
-              )
-            })}
-          </div>
+          {player.proposedTicketCards.length > 0 ? 
+            <TicketCardSelection />
+          :
+            <>
+              <div style={{ position: 'absolute', right: 0, top: 0 }}>
+                <UserImage user={user} label={"YOU"} size={40} />
+              </div>
+              <div style={{ display: 'flex', gap: '1vw' }}>
+                {player.ticketCards.map(c => {
+                  return (
+                    <TicketCard key={c.id} card={c} />
+                  )
+                })}
+                {Object.keys(trainCarCardsGroupedByColor).map(color => {
+                  const firstCard = trainCarCardsGroupedByColor[color][0];
+                  return (
+                    <TrainCarCard key={firstCard.id} color={firstCard.color} count={trainCarCardsGroupedByColor[color].length} orientation="vertical" size={12} />
+                  )
+                })}
+              </div>
+            </>
+          }
         </div>
       </div>
       <div id='right-side-container'>

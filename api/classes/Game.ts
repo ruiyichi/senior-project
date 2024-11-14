@@ -167,15 +167,25 @@ export class Game {
     player.proposedTicketCards = ticket_cards;
   }
 
-  keepTicketCards(player_id: string, ticket_cards: TicketCard[]) {
+  keepTicketCards(player_id: string, ticket_card_ids: string[], min_num_cards=2) {
     const player = this.getPlayerFromId(player_id);
     if (!player) return;
 
-    for (const card of ticket_cards) {
-      if (player.proposedTicketCards.find(c => c.id === card.id)) {
-        player.ticketCards.push(card);
+    const new_ticket_cards = [] as TicketCard[];
+
+    for (const card_id of ticket_card_ids) {
+      const card = player.proposedTicketCards.find(c => c.id === card_id);
+      if (card) {
+        new_ticket_cards.push(card);
       }
     }
+
+    if (new_ticket_cards.length < min_num_cards) {
+      return;
+    }
+
+    new_ticket_cards.forEach(card => player.ticketCards.push(card));
+    player.proposedTicketCards = [];
   }
 
   startGame() {

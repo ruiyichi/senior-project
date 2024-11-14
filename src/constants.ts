@@ -1445,3 +1445,10 @@ export const TrainCarCardColorToImageVertical = {
   [Color.Blue]: BlueTrainCarCardVertical,
   [Color.Orange]: OrangeTrainCarCardVertical
 }
+
+export enum ACTIONS {
+  NO_ACTION,
+  DRAW_CARDS,
+  DRAW_TICKETS,
+  CLAIM_ROUTE
+};
