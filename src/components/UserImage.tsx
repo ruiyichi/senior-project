@@ -2,10 +2,9 @@ import classNames from "classnames";
 import { motion } from "framer-motion";
 import { MouseEventHandler } from "react";
 import { SERVER_URI } from "../constants";
-import { User } from "../../types/User.ts"
 
 interface UserImageProps {
-  user: User, 
+  user: { id: string, username: string }, 
   onClick?: MouseEventHandler<HTMLImageElement>, 
   size?: number, 
   label?: string, 

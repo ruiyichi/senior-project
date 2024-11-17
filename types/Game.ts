@@ -1,6 +1,7 @@
 import { Route, TrainCarCard } from "../api/types";
 import { OtherPlayer } from "./OtherPlayer";
 import { GameStatus } from "../api/classes/Game";
+import { ACTION } from "api/constants";
 
 export type Game = {
   id: string;
@@ -14,4 +15,5 @@ export type Game = {
   turnStartTime: number;
   faceUpTrainCarCards: TrainCarCard[];
   status: GameStatus;
+  activePlayerAction: ACTION;
 };

@@ -58,7 +58,7 @@ function init_server() {
 import { Socket, Server } from "socket.io";
 import jwt, { Secret } from 'jsonwebtoken';
 import { createLobbyCode } from "./utils";
-import { MAX_ITER } from "./constants";
+import { ACTION, MAX_ITER } from "./constants";
 import { WebsocketUser } from "./types/WebsocketUser";
 import { WebsocketLobby } from "./types/WebsocketLobby";
 import { Game } from "./classes/Game";
@@ -162,11 +162,15 @@ function init_websocket_server() {
 			sockets_in_game?.forEach(socket_id => getSocketByID(socket_id)?.emit("updateGame", game.getSanitizedGame()));
 		}
 
-		const emitRespectivePlayers = () => {
+		const getGame = () => {
 			const game_id = player_id_to_game_id[user.id];
 			if (!game_id) return;
 
-			const game = game_id_to_game[game_id];
+			return game_id_to_game[game_id];
+		}
+
+		const emitRespectivePlayers = () => {
+			const game = getGame();
 			if (!game) return;
 
 			const sockets_in_game = getSocketIdsInRoom(game.id);
@@ -177,10 +181,7 @@ function init_websocket_server() {
 		}
 
 		const emitGame = () => {
-			const game_id = player_id_to_game_id[user.id];
-			if (!game_id) return;
-
-			const game = game_id_to_game[game_id];
+			const game = getGame();
 			if (!game) return;
 
 			socket.emit("updateGame", game.getSanitizedGame());
@@ -259,13 +260,29 @@ function init_websocket_server() {
 		}
 
 		const selectTicketCards = (ticketCardIds: string[]) => {
-			const game_id = player_id_to_game_id[user.id];
-			if (!game_id) return;
-
-			const game = game_id_to_game[game_id];
+			const game = getGame();
 			if (!game) return;
 
 			game.keepTicketCards(user.id, ticketCardIds);
+			emitGameToAllClients(game.id);
+			emitRespectivePlayers();
+		}
+
+		const playerKeepTrainCarCard = (card_id: string | undefined) => {
+			const game = getGame();
+			if (!game) return;
+
+			game.keepTrainCarCard(user.id, card_id);
+
+			emitGameToAllClients(game.id);
+			emitRespectivePlayers();
+		}
+
+		const playerActionTicketCard = () => {
+			const game = getGame();
+			if (!game) return;
+
+			game.actionTicketCards(user.id);
 			emitGameToAllClients(game.id);
 			emitRespectivePlayers();
 		}
@@ -276,7 +293,9 @@ function init_websocket_server() {
 		socket.on("joinLobby", joinLobby);
 		socket.on("leaveLobby", leaveLobby);
 		socket.on("startGame", startGame);
-		socket.on("selectTicketCards", selectTicketCards)
+		socket.on("selectTicketCards", selectTicketCards);
+		socket.on("playerKeepTrainCarCard", playerKeepTrainCarCard);
+		socket.on("playerActionTicketCard", playerActionTicketCard);
 
 		// Send on connect
 		handleSocketConnect();

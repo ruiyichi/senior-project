@@ -1,7 +1,7 @@
 import { Player } from "./Player";
 import { v4 as uuid } from "uuid";
 import { randomElementFromArr } from "../utils";
-import { NUM_FACE_UP_TRAIN_CAR_CARDS, NUM_PROPOSED_TICKET_CARDS, NUM_STARTING_TRAIN_CAR_CARDS, TRAIN_CAR_CARD_TYPES, TRAIN_ROUTES, TRAIN_TICKETS } from "../constants";
+import { ACTION, NUM_FACE_UP_TRAIN_CAR_CARDS, NUM_PROPOSED_TICKET_CARDS, NUM_STARTING_TRAIN_CAR_CARDS, TRAIN_CAR_CARD_TYPES, TRAIN_ROUTES, TRAIN_TICKETS } from "../constants";
 import { Deck } from "./Deck";
 import { Color, Route, TicketCard, TrainCarCard } from "../types";
 
@@ -21,6 +21,9 @@ export class Game {
   turnTimer: number;
   startTime: number;
   turnStartTime: number;
+  activePlayerAction: ACTION;
+  activePlayerNumDrawnCards: number;
+  activePlayerMaxNumDrawnCards: number;
   faceUpTrainCarCards: TrainCarCard[];
   status: GameStatus;
   
@@ -31,6 +34,9 @@ export class Game {
     this.players = players;
     this.unclaimedRoutes = TRAIN_ROUTES.map(route => ({ id: uuid(), ...route }));
     this.activePlayerId = randomElementFromArr(players).id;
+    this.activePlayerAction = ACTION.NO_ACTION;
+    this.activePlayerNumDrawnCards = 0;
+    this.activePlayerMaxNumDrawnCards = 2;
     this.turnTimer = 0;
     this.startTime = 0;
     this.turnStartTime = 0;
@@ -38,25 +44,30 @@ export class Game {
     this.status = GameStatus.PENDING;
   }
 
-  endActivePlayerTurn() {
-    // set the next player to be the active player
-    let activePlayerIdx = this.players.findIndex(p => p.id === this.activePlayerId);
-
-    if (activePlayerIdx === -1) return;
-
-    activePlayerIdx += 1;
-    activePlayerIdx %= this.players.length;
-
-    this.activePlayerId = this.players[activePlayerIdx].id;
-  }
-
-  updateFaceUpTrainCarCards() {
-    for (let i = this.faceUpTrainCarCards.length; i < NUM_FACE_UP_TRAIN_CAR_CARDS; i++) {
-      const card = this.trainCarCardDeck.deal();
-      if (card === undefined) {
-        break;
+  updateFaceUpTrainCarCards(replacements?: TrainCarCard[]) {
+    if (!replacements) {
+      for (let i = this.faceUpTrainCarCards.length; i < NUM_FACE_UP_TRAIN_CAR_CARDS; i++) {
+        const card = this.trainCarCardDeck.deal();
+        if (card === undefined) break;
+        this.faceUpTrainCarCards.push(card);
       }
-      this.faceUpTrainCarCards.push(card);
+    } else {
+      for (const replacement of replacements) {
+        const replacement_idx = this.faceUpTrainCarCards.findIndex(c => c.id === replacement.id);
+        if (replacement_idx === -1) continue;
+
+        const card = this.trainCarCardDeck.deal();
+        if (card === undefined) break;
+        this.faceUpTrainCarCards[replacement_idx] = card;
+      }
+    }
+
+    while (this.trainCarCardDeck.cards.length > 0 && this.faceUpTrainCarCards.filter(c => c.color === Color.Wild).length >= 3) {
+      for (const card of this.trainCarCardDeck.cards) {
+        this.trainCarCardDeck.discard(card);
+      }
+      this.faceUpTrainCarCards = [];
+      this.updateFaceUpTrainCarCards();
     }
   }
 
@@ -106,14 +117,10 @@ export class Game {
     if (playerId !== this.activePlayerId) return;
 
     // insufficient train cars
-    if (player.numTrainCars < route.numTrainCars) {
-      return;
-    }
-
+    if (player.numTrainCars < route.numTrainCars) return;
+    
     // no wild route color provided
-    if (route.color === Color.Wild && wild_route_color === undefined) {
-      return;
-    }
+    if (route.color === Color.Wild && wild_route_color === undefined) return;
 
     const route_cost = route.numTrainCars;
     let route_color = route.color;
@@ -125,16 +132,12 @@ export class Game {
 
     // not enough wild cards
     const player_wild_cards = player.trainCarCards.filter(c => c.color === Color.Wild);
-    if (player_wild_cards.length < num_wilds_to_use) {
-      return;
-    }
-
+    if (player_wild_cards.length < num_wilds_to_use) return;
+    
     // not enough train cars of route color
     const player_cards_of_route_color = player.trainCarCards.filter(c => c.color === route_color);
-    if (player_cards_of_route_color.length + num_wilds_to_use < route_cost) {
-      return;
-    }
-
+    if (player_cards_of_route_color.length + num_wilds_to_use < route_cost)return;
+    
     player.routes.push(route);
     this.unclaimedRoutes = this.unclaimedRoutes.filter(r => r.id !== route.id);
   }
@@ -167,9 +170,12 @@ export class Game {
     player.proposedTicketCards = ticket_cards;
   }
 
-  keepTicketCards(player_id: string, ticket_card_ids: string[], min_num_cards=2) {
+  keepTicketCards(player_id: string, ticket_card_ids: string[]) {
     const player = this.getPlayerFromId(player_id);
     if (!player) return;
+
+    const is_active_player_action = this.activePlayerAction === ACTION.DRAW_TICKETS && player_id === this.activePlayerId;
+    const min_num_cards = is_active_player_action ? 1 : 2;
 
     const new_ticket_cards = [] as TicketCard[];
 
@@ -180,12 +186,73 @@ export class Game {
       }
     }
 
-    if (new_ticket_cards.length < min_num_cards) {
-      return;
+    if (new_ticket_cards.length < min_num_cards) return;
+    
+    new_ticket_cards.forEach(card => player.ticketCards.push(card));
+    for (const card of player.proposedTicketCards) {
+      if (!ticket_card_ids.includes(card.id)) {
+        this.ticketCardDeck.cards.unshift(card);
+      }
     }
 
-    new_ticket_cards.forEach(card => player.ticketCards.push(card));
     player.proposedTicketCards = [];
+
+    if (is_active_player_action) {
+      this.nextTurn();
+    }
+  }
+
+  keepTrainCarCard(player_id: string, card_id: string | undefined) {
+    if (this.activePlayerId !== player_id) return;
+    
+    const player = this.getPlayerFromId(player_id);
+    if (!player) return;
+
+    if (this.activePlayerNumDrawnCards >= this.activePlayerMaxNumDrawnCards) return;
+
+    if (!(this.activePlayerAction === ACTION.NO_ACTION || this.activePlayerAction === ACTION.DRAW_CARDS)) return;
+
+    if (this.activePlayerAction === ACTION.NO_ACTION) {
+      this.activePlayerAction = ACTION.DRAW_CARDS;
+    }
+
+    if (card_id === undefined) {
+      const card = this.trainCarCardDeck.deal();
+      if (!card) return;
+
+      player.trainCarCards.push(card);
+    } else {
+      const card = this.faceUpTrainCarCards.find(c => c.id === card_id);
+      if (!card) return;
+
+      if (card.color === Color.Wild) {
+        this.activePlayerMaxNumDrawnCards = 1;
+      }
+
+      const card_idx = this.faceUpTrainCarCards.findIndex(c => c.id === card_id);
+
+      player.trainCarCards.push(card);
+      this.updateFaceUpTrainCarCards([card]);
+      
+      const replaced_card = this.faceUpTrainCarCards[card_idx];
+      if (replaced_card.color === Color.Wild) {
+        this.nextTurn();
+        return;
+      }
+    }
+    this.activePlayerNumDrawnCards += 1;
+
+    if (this.activePlayerNumDrawnCards >= this.activePlayerMaxNumDrawnCards) {
+      this.nextTurn();
+    }
+  }
+
+  actionTicketCards(player_id: string) {
+    if (this.activePlayerAction !== ACTION.NO_ACTION) return;
+    if (player_id !== this.activePlayerId) return;
+
+    this.activePlayerAction = ACTION.DRAW_TICKETS;
+    this.proposeTicketCards(player_id);
   }
 
   startGame() {
@@ -208,7 +275,17 @@ export class Game {
       startTime: this.startTime,
       turnStartTime: this.turnStartTime,
       faceUpTrainCarCards: this.faceUpTrainCarCards,
-      status: this.status
+      status: this.status,
+      activePlayerAction: this.activePlayerAction
     };
+  }
+
+  nextTurn() {
+    this.activePlayerNumDrawnCards = 0;
+    this.activePlayerMaxNumDrawnCards = 2;
+    this.activePlayerAction = ACTION.NO_ACTION;
+
+    const currentPlayerIdIdx = this.players.findIndex(p => p.id === this.activePlayerId);
+    this.activePlayerId = this.players[(currentPlayerIdIdx + 1) % this.players.length].id;
   }
 }

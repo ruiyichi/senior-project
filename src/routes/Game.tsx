@@ -8,22 +8,16 @@ import { useUser } from "../contexts/UserContext";
 import Map from "../components/Map";
 import TicketCardSelection from "../components/TicketCardSelection";
 import TicketCard from "../components/TicketCard";
+import PlayerScorecard from "../components/PlayerScorecard";
+import StatusMessage from "./StatusMessage";
+import { useSocket } from "../contexts/SocketContext";
+import { ACTION } from "../../api/constants";
 
 const Game = () => {
   const { game } = useGame();
   const { player } = usePlayer();
   const { user } = useUser();
-
-  const getStatusMessage = () => {
-    if (player.proposedTicketCards.length > 0) {
-      return 'Select ticket cards';
-    } else {
-      const activePlayer = game.players.find(p => p.id === game.activePlayerId);
-      if (activePlayer) {
-        return `Player ${activePlayer.username}'s turn!`;
-      }
-    }
-  }
+  const { socketRef } = useSocket();
 
   const trainCarCardsGroupedByColor = player.trainCarCards.reduce((acc, item) => {
     const key = item.color;
@@ -40,13 +34,15 @@ const Game = () => {
   return (
     <div id='game-container'>
       <div id='left-container'>
-        
+        {game.players.filter(p => p.id !== player.id).map(p => {
+          return (
+            <PlayerScorecard key={p.id} player={p} />
+          )
+        })}
       </div>
       <div id='middle-container'>
         <div id='map-container'>
-          <div style={{ position: 'absolute', zIndex: 1, left: '0%', bottom: '0%', fontSize: '28px', backgroundColor: 'white', width: '100%', textAlign: 'center' }}>
-            {getStatusMessage()}
-          </div>
+          <StatusMessage />
           <Map />
         </div>
   
@@ -77,14 +73,31 @@ const Game = () => {
       </div>
       <div id='right-side-container'>
         <div>
-          <TicketCardDeckPlaceholder />
-          <TrainCarCardDeckPlaceholder orientation="horizontal" />
+          <TicketCardDeckPlaceholder 
+            onClick={(game.activePlayerAction === ACTION.NO_ACTION) ? () => {
+              socketRef.current?.emit("playerActionTicketCard");
+            } : undefined}
+          />
+          <TrainCarCardDeckPlaceholder 
+            orientation="horizontal" 
+            onClick={(game.activePlayerAction === ACTION.NO_ACTION || game.activePlayerAction === ACTION.DRAW_CARDS) ? () => {
+              socketRef.current?.emit("playerKeepTrainCarCard");
+            } : undefined}
+          />
         </div>
         
         <div>
           {game.faceUpTrainCarCards.map(c => {
+            const onClick = (game.activePlayerAction === ACTION.NO_ACTION || game.activePlayerAction === ACTION.DRAW_CARDS) ? () => {
+              socketRef.current?.emit("playerKeepTrainCarCard", c.id);
+            } : undefined;
+
             return (
-              <TrainCarCard key={c.id} color={c.color} />
+              <TrainCarCard 
+                key={c.id} 
+                color={c.color} 
+                onClick={onClick}
+              />
             )
           })}
         </div>

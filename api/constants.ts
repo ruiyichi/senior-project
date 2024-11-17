@@ -1,4 +1,4 @@
-import { Color, Route } from "./types";
+import { Color } from "./types";
 
 const DEFAULT_NUM_TRAIN_CAR_CARDS = 12;
 
@@ -812,3 +812,10 @@ export const TRAIN_TICKETS = [
     points: 7
   },
 ];
+
+export enum ACTION {
+  NO_ACTION,
+  DRAW_CARDS,
+  DRAW_TICKETS,
+  CLAIM_ROUTE
+};

@@ -1,15 +1,13 @@
-import { createContext, useContext, useReducer, useState } from "react";
+import { createContext, useContext, useReducer } from "react";
 import { Game } from "../../types/Game";
 import { GameStatus } from "../../api/classes/Game";
-import { ACTIONS } from "../constants";
+import { ACTION } from "../../api/constants";
 
 const GameContext = createContext({} as GameContextValue);
 
 type GameContextValue = { 
 	game: Game,
 	updateGame: React.Dispatch<any>,
-	action: ACTIONS,
-	setAction: React.Dispatch<React.SetStateAction<ACTIONS>>
 };
 
 const defaultGame = {
@@ -23,7 +21,8 @@ const defaultGame = {
   startTime: 0,
   turnStartTime: 0,
   faceUpTrainCarCards: [],
-	status: GameStatus.PENDING
+	status: GameStatus.PENDING,
+	activePlayerAction: ACTION.NO_ACTION
 };
 
 export const GameProvider = ({ children }: { children: React.ReactNode }) => {
@@ -32,13 +31,10 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 		return { ...game, ...payload };
 	}
 	const [game, updateGame] = useReducer(gameReducer, defaultGame);
-	const [action, setAction] = useState(ACTIONS.NO_ACTION);
 
 	const value: GameContextValue = { 
 		game,
 		updateGame,
-		action,
-		setAction
 	};
 
 	return (

@@ -269,11 +269,6 @@ button {
   &.vertical {
     flex-direction: column;
   }
-
-  .user-image {
-    border-radius: 5em;
-    background-color: white;
-  }
 }
 
 #lobby-container {
@@ -321,6 +316,7 @@ button {
     border-bottom: .8vh solid black;
     border-right: .8vh solid black;
     background-color: rgb(87, 28, 1);
+    padding: 1em;
   }
 
   #middle-container {
@@ -377,4 +373,9 @@ button {
   &.selected {
     background-color: green;
   }
+}
+
+.user-image {
+  border-radius: 5em;
+  background-color: white;
 }

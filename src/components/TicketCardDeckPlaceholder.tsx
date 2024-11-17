@@ -2,15 +2,20 @@ import FaceDownTicketCard from "../assets/ticket_card.jpg";
 import { useGame } from "../contexts/GameContext";
 import { motion } from "framer-motion";
 
-const TicketCardDeckPlaceholder = ({ size=7 }: { size?: number }) => {
+type TicketCardDeckPlaceholderProps = {
+  size?: number,
+  onClick?: React.MouseEventHandler<HTMLDivElement>
+};
+const TicketCardDeckPlaceholder = ({ size=7, onClick }: TicketCardDeckPlaceholderProps) => {
   const { game } = useGame();
 
   return (
     <motion.div 
-      style={{ position: 'relative', width: 'fit-content', cursor: 'pointer' }}
+      style={{ position: 'relative', width: 'fit-content', cursor: onClick === undefined ? 'default' : 'pointer' }}
       whileHover={{
-        scale: 1.05
+        scale: onClick === undefined ? 1 : 1.05
       }}
+      onClick={onClick}
     >
       <img src={FaceDownTicketCard} style={{ width: `${size}vw` }} />
       <div style={{ position: 'absolute', right: 2, bottom: 2, fontSize: '1vw' }}>
