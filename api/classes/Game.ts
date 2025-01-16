@@ -226,19 +226,12 @@ export class Game {
       if (!card) return;
 
       if (card.color === Color.Wild) {
+        if (this.activePlayerNumDrawnCards > 0) return;
         this.activePlayerMaxNumDrawnCards = 1;
       }
 
-      const card_idx = this.faceUpTrainCarCards.findIndex(c => c.id === card_id);
-
       player.trainCarCards.push(card);
       this.updateFaceUpTrainCarCards([card]);
-      
-      const replaced_card = this.faceUpTrainCarCards[card_idx];
-      if (replaced_card.color === Color.Wild) {
-        this.nextTurn();
-        return;
-      }
     }
     this.activePlayerNumDrawnCards += 1;
 

@@ -1,4 +1,7 @@
 import { Color } from "../api/types";
+import { Route } from "../types/Route";
+import { v4 as uuid } from "uuid";
+
 import RedTrainCarCard from "./assets/train_car_cards/red.jpg";
 import BlackTrainCarCard from "./assets/train_car_cards/black.jpg";
 import WhiteTrainCarCard from "./assets/train_car_cards/white.jpg";
@@ -1420,7 +1423,8 @@ export const Routes = [
       { x: 83.5, y: 83, angle: -20 },
     ],
   },
-];
+] as Route[];
+Routes.forEach(r => r.id = uuid());
 
 export const TrainCarCardColorToImage = {
   [Color.Red]: RedTrainCarCard,

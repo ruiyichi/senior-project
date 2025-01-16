@@ -1,7 +1,7 @@
 import CityMarker from "../components/CityMarker";
 import { CityMarkers, Routes } from "../constants";
 import mapBackground from "../assets/map.jpg";
-import RouteBox from "../components/RouteBox";
+import RouteBoxes from "./RouteBoxes";
 
 const Map = () => {
   return (
@@ -13,7 +13,13 @@ const Map = () => {
         )
       })}
       {Routes.map(route => {
-        return route.path.map(path => <RouteBox route_position={{ x: path.x, y: path.y }} color={route.color} angle={path.angle} />);
+        return (
+          <div>
+            {
+              <RouteBoxes route_id={route.id} path={route.path} color={route.color} />
+            }
+          </div>
+        );
       })}
     </>
   );

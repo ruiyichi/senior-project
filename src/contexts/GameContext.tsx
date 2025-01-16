@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer } from "react";
+import { createContext, useContext, useReducer, useState } from "react";
 import { Game } from "../../types/Game";
 import { GameStatus } from "../../api/classes/Game";
 import { ACTION } from "../../api/constants";
@@ -7,7 +7,9 @@ const GameContext = createContext({} as GameContextValue);
 
 type GameContextValue = { 
 	game: Game,
-	updateGame: React.Dispatch<any>,
+	updateGame: React.Dispatch<Game>,
+	selectedRouteId: string,
+	setSelectedRouteId: React.Dispatch<React.SetStateAction<string>>
 };
 
 const defaultGame = {
@@ -32,9 +34,13 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 	}
 	const [game, updateGame] = useReducer(gameReducer, defaultGame);
 
+	const [selectedRouteId, setSelectedRouteId] = useState("");
+
 	const value: GameContextValue = { 
 		game,
 		updateGame,
+		selectedRouteId,
+		setSelectedRouteId
 	};
 
 	return (

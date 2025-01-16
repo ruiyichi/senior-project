@@ -3,33 +3,17 @@ import TrainCarCard from "../components/TrainCarCard";
 import TrainCarCardDeckPlaceholder from "../components/TrainCarCardDeckPlaceholder";
 import TicketCardDeckPlaceholder from "../components/TicketCardDeckPlaceholder";
 import { usePlayer } from "../contexts/PlayerContext";
-import { UserImage } from "../components/UserImage";
-import { useUser } from "../contexts/UserContext";
 import Map from "../components/Map";
-import TicketCardSelection from "../components/TicketCardSelection";
-import TicketCard from "../components/TicketCard";
 import PlayerScorecard from "../components/PlayerScorecard";
 import StatusMessage from "./StatusMessage";
 import { useSocket } from "../contexts/SocketContext";
 import { ACTION } from "../../api/constants";
+import BottomBarContainer from "../components/BottomBarContainer";
 
 const Game = () => {
   const { game } = useGame();
   const { player } = usePlayer();
-  const { user } = useUser();
   const { socketRef } = useSocket();
-
-  const trainCarCardsGroupedByColor = player.trainCarCards.reduce((acc, item) => {
-    const key = item.color;
-  
-    if (!acc[key]) {
-      acc[key] = [];
-    }
-  
-    acc[key].push(item);
-  
-    return acc;
-  }, {});
 
   return (
     <div id='game-container'>
@@ -46,30 +30,7 @@ const Game = () => {
           <Map />
         </div>
   
-        <div id='bottom-bar-container'>
-          {player.proposedTicketCards.length > 0 ? 
-            <TicketCardSelection />
-          :
-            <>
-              <div style={{ position: 'absolute', right: 0, top: 0 }}>
-                <UserImage user={user} label={"YOU"} size={40} />
-              </div>
-              <div style={{ display: 'flex', gap: '1vw' }}>
-                {player.ticketCards.map(c => {
-                  return (
-                    <TicketCard key={c.id} card={c} />
-                  )
-                })}
-                {Object.keys(trainCarCardsGroupedByColor).map(color => {
-                  const firstCard = trainCarCardsGroupedByColor[color][0];
-                  return (
-                    <TrainCarCard key={firstCard.id} color={firstCard.color} count={trainCarCardsGroupedByColor[color].length} orientation="vertical" size={12} />
-                  )
-                })}
-              </div>
-            </>
-          }
-        </div>
+        <BottomBarContainer />
       </div>
       <div id='right-side-container'>
         <div>
@@ -106,4 +67,4 @@ const Game = () => {
   );
 }
 
-export default Game;
+export default Game;  
