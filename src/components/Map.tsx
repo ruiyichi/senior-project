@@ -1,9 +1,12 @@
 import CityMarker from "../components/CityMarker";
-import { CityMarkers, Routes } from "../constants";
+import { CityMarkers } from "../constants";
 import mapBackground from "../assets/map.jpg";
 import RouteBoxes from "./RouteBoxes";
+import { useGame } from "../contexts/GameContext";
 
 const Map = () => {
+  const { game } = useGame();
+
   return (
     <>
       <img id='map-image' src={mapBackground} />
@@ -12,11 +15,11 @@ const Map = () => {
           <CityMarker marker_position={marker.marker_position} label={marker.name} label_offset={marker.label_offset} />
         )
       })}
-      {Routes.map(route => {
+      {game.routes.map(route => {
         return (
           <div>
             {
-              <RouteBoxes route_id={route.id} path={route.path} color={route.color} />
+              <RouteBoxes route={route} path={route.path} color={route.color} />
             }
           </div>
         );

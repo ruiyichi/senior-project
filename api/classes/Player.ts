@@ -1,5 +1,5 @@
 import { NUM_TRAIN_CARS } from "../constants";
-import { Route, TicketCard, TrainCarCard } from "../types";
+import { PlayerColor, Route, TicketCard, TrainCarCard } from "../types";
 
 export class Player {
   id: string;
@@ -10,8 +10,9 @@ export class Player {
   routes: Route[];
   numTrainCars: number;
   proposedTicketCards: TicketCard[];
+  color: PlayerColor;
 
-  constructor(id: string, username: string) {
+  constructor(id: string, username: string, color: PlayerColor = PlayerColor.RED) {
     this.id = id;
     this.username = username;
     this.trainCarCards = [];
@@ -20,6 +21,7 @@ export class Player {
     this.routes = [];
     this.numTrainCars = NUM_TRAIN_CARS;
     this.proposedTicketCards = [];
+    this.color = color;
   }
 
   getSanitizedPlayer() {
@@ -31,6 +33,7 @@ export class Player {
       points: this.points,
       routes: this.routes,
       numTrainCars: this.numTrainCars,
+      color: this.color
     };
   }
 }

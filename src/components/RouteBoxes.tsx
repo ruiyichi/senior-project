@@ -1,7 +1,8 @@
-import { Color } from "api/types"
+import { Color, Route } from "../../api/types"
 import RouteBox from "./RouteBox"
 import { motion } from "framer-motion"
 import { useGame } from "../contexts/GameContext"
+import { usePlayer } from "../contexts/PlayerContext"
 
 type RouteBoxesProps = {
   path: {
@@ -10,24 +11,39 @@ type RouteBoxesProps = {
     angle: number
   }[],
   color: Color,
-  route_id: string
+  route: Route
 }
 
-const RouteBoxes = ({ path, color, route_id }: RouteBoxesProps) => {
-  const { selectedRouteId, setSelectedRouteId } = useGame();
+const RouteBoxes = ({ path, color, route }: RouteBoxesProps) => {
+  const { selectedRoute, setSelectedRoute, game, setSelectedCardColor } = useGame();
+  const { player } = usePlayer();
 
   return (
     <motion.div 
       whileHover="hover"
       onClick={() => {
-        if (route_id === selectedRouteId) {
-          setSelectedRouteId('');
+        if (route.claimed_player_id) return;
+
+        const activePlayer = game.players.find(p => p.id === game.activePlayerId);
+        if (!activePlayer || activePlayer.id !== player.id) return;
+        
+        if (selectedRoute && route.id === selectedRoute.id) {
+          setSelectedRoute(undefined);
+          setSelectedCardColor(undefined);
         } else {
-          setSelectedRouteId(route_id);
+          setSelectedRoute(route);
         }
       }}
     >
-      {path.map(p => <RouteBox route_id={route_id} route_position={{ x: p.x, y: p.y }} color={color} angle={p.angle} />)}
+      {path.map(p => (
+        <RouteBox 
+          route={route} 
+          route_position={{ x: p.x, y: p.y }} 
+          color={color} 
+          angle={p.angle} 
+          claimed_color={game.players.find(p => p.id === route.claimed_player_id)?.color}
+        />
+      ))}
     </motion.div>
   );
 }

@@ -5,5 +5,6 @@ export type Route = {
   destination: string,
   id: string,
   color: Color,
-  path: { x: number, y: number, angle: number }[]
+  path: { x: number, y: number, angle: number }[],
+  claimed_player_id?: string;
 };

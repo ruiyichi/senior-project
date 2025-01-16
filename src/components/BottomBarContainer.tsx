@@ -4,10 +4,12 @@ import TicketCardSelection from "./TicketCardSelection";
 import { UserImage } from "./UserImage";
 import { usePlayer } from "../contexts/PlayerContext";
 import TrainCarCard from "./TrainCarCard";
+import { useGame } from "../contexts/GameContext";
 
 const BottomBarContainer = () => {
   const { player } = usePlayer();
   const { user } = useUser();
+  const { selectedCardColor, setSelectedCardColor, selectedRoute } = useGame();
 
   const trainCarCardsGroupedByColor = player.trainCarCards.reduce((acc, item) => {
     const key = item.color;
@@ -36,10 +38,17 @@ const BottomBarContainer = () => {
                 <TicketCard key={c.id} card={c} />
               )
             })}
+
             {Object.keys(trainCarCardsGroupedByColor).map(color => {
               const firstCard = trainCarCardsGroupedByColor[color][0];
               return (
                 <TrainCarCard 
+                  onClick={() => {
+                    if (selectedRoute) {
+                      setSelectedCardColor(selectedCardColor === firstCard.color ? undefined : firstCard.color)
+                    }
+                  }}
+                  animate={selectedCardColor === firstCard.color ? 'active' : 'default'}
                   key={firstCard.id} 
                   color={firstCard.color} 
                   count={trainCarCardsGroupedByColor[color].length} 

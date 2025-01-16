@@ -1,24 +1,32 @@
 import { Color } from "../../api/types";
 import { TrainCarCardColorToImage, TrainCarCardColorToImageVertical } from "../constants";
-import { motion } from "framer-motion";
+import { AnimationProps, motion } from "framer-motion";
 
 type TrainCarCardProps = {
   color: Color, 
   size?: number, 
   orientation?: 'horizontal' | 'vertical',
   count?: number,
-  onClick?: React.MouseEventHandler<HTMLDivElement>
+  onClick?: React.MouseEventHandler<HTMLDivElement>,
+  animate?: AnimationProps['animate']
 };
 
-const TrainCarCard = ({ color, size=7, orientation='horizontal', count, onClick } : TrainCarCardProps) => {
+const TrainCarCard = ({ color, size=7, orientation='horizontal', count, onClick, animate } : TrainCarCardProps) => {
   const img_src = orientation === 'horizontal' ? TrainCarCardColorToImage[color] : TrainCarCardColorToImageVertical[color];
 
   return (
     <motion.div 
       style={{ position: 'relative', cursor: 'pointer', height: 'fit-content' }}
-      whileHover={{
-        scale: 1.05
+      variants={{
+        hover: {
+          scale: 1.05
+        },
+        active: {
+          y: -50
+        }
       }}
+      animate={animate}
+      whileHover={'hover'}
       onClick={onClick}
     >
       {count !== undefined && 

@@ -6,9 +6,9 @@ import FaceDownTicketCard from "../assets/ticket_card.jpg";
 import FaceDownTrainCardHorizontal from "../assets/face_down_train_card_horizontal.jpg";
 import TrainCarIcon from "../assets/train_car_icon.png";
 
-const PlayerScorecard = ({ player }: {player: OtherPlayer }) => {
+const PlayerScorecard = ({ player }: { player: OtherPlayer }) => {
   return (
-    <div style={{ borderRadius: '20px', display: 'flex', backgroundColor: 'red', padding: '0.5em', color: 'white', gap: '20px', flexWrap: 'wrap' }}>
+    <div style={{ borderRadius: '20px', display: 'flex', backgroundColor: player.color, padding: '0.5em', color: 'white', gap: '20px', flexWrap: 'wrap' }}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <motion.img 
           className={classNames({

@@ -63,6 +63,7 @@ import { WebsocketUser } from "./types/WebsocketUser";
 import { WebsocketLobby } from "./types/WebsocketLobby";
 import { Game } from "./classes/Game";
 import { Player } from "./classes/Player";
+import { Color, PlayerColor } from "./types";
 
 function init_websocket_server() {
 	const socket_id_to_user = {} as Record<string, WebsocketUser>;
@@ -216,7 +217,8 @@ function init_websocket_server() {
 			const lobby = lobby_id_to_lobby[lobby_id];
 
 			const players = lobby.players;
-			const game_players = players.map(p => new Player(p.id, p.username));
+			const playerColors = Object.keys(PlayerColor);
+			const game_players = players.map((p, i) => new Player(p.id, p.username, playerColors[i] as PlayerColor));
 			const game = new Game(game_players);
 
 			game_id_to_game[game.id] = game;
@@ -287,6 +289,15 @@ function init_websocket_server() {
 			emitRespectivePlayers();
 		}
 
+		const playerClaimRoute = (player_id: string, route_id: string, color?: Color) => {
+			const game = getGame();
+			if (!game) return;
+
+			game.claimRoute(player_id, route_id, color);
+			emitGameToAllClients(game.id);
+			emitRespectivePlayers();
+		}
+
 		socket.on("disconnect", handleDisconnect);
 		socket.on("createLobby", createLobby);
 		socket.on("emitLobbies", emitLobbies);
@@ -296,6 +307,7 @@ function init_websocket_server() {
 		socket.on("selectTicketCards", selectTicketCards);
 		socket.on("playerKeepTrainCarCard", playerKeepTrainCarCard);
 		socket.on("playerActionTicketCard", playerActionTicketCard);
+		socket.on("playerClaimRoute", playerClaimRoute);
 
 		// Send on connect
 		handleSocketConnect();

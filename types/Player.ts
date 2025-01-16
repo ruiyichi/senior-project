@@ -1,4 +1,4 @@
-import { Route, TicketCard, TrainCarCard } from "../api/types";
+import { PlayerColor, Route, TicketCard, TrainCarCard } from "../api/types";
 
 export type Player = {
   id: string;
@@ -9,4 +9,5 @@ export type Player = {
   routes: Route[];
   numTrainCars: number;
   proposedTicketCards: TicketCard[];
+  color: PlayerColor;
 };

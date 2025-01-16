@@ -10,6 +10,14 @@ export enum Color {
   Wild = "gray"
 };
 
+export enum PlayerColor {
+  RED = '#FF0000',
+  BLACK = '#000000',
+  GREEN = '#00FF00',
+  BLUE = '0000FF',
+  YELLOW = 'FFFF00'
+}
+
 export type TicketCard = {
   id: string;
   start: string;
@@ -24,9 +32,10 @@ export type TrainCarCard = {
 };
 
 export type Route = {
-  id: string;
-  start: string;
-  destination: string;
-  numTrainCars: number;
-  color: Color;
-}
+  start: string,
+  destination: string,
+  id?: string,
+  color: Color,
+  path: { x: number, y: number, angle: number }[],
+  claimed_player_id?: string;
+};

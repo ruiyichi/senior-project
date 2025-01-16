@@ -16,7 +16,7 @@ export class Game {
   trainCarCardDeck: Deck<TrainCarCard>;
   ticketCardDeck: Deck<TicketCard>;
   players: Player[];
-  unclaimedRoutes: Route[];
+  routes: Route[];
   activePlayerId: string;
   turnTimer: number;
   startTime: number;
@@ -32,7 +32,7 @@ export class Game {
     this.trainCarCardDeck = this.initializeTrainCarCardDeck();
     this.ticketCardDeck = this.initializeTicketCardDeck();
     this.players = players;
-    this.unclaimedRoutes = TRAIN_ROUTES.map(route => ({ id: uuid(), ...route }));
+    this.routes = TRAIN_ROUTES.map(route => ({ id: uuid(), ...route }));
     this.activePlayerId = randomElementFromArr(players).id;
     this.activePlayerAction = ACTION.NO_ACTION;
     this.activePlayerNumDrawnCards = 0;
@@ -110,19 +110,38 @@ export class Game {
     return this.players.find(p => p.id === playerId);
   }
 
-  claimRoute(playerId: string, route: Route, num_wilds_to_use: number, wild_route_color?: Color) {
+  pointsFromRouteLength(routeLength: number) {
+    const map = {
+      1: 1,
+      2: 2,
+      3: 4,
+      4: 7,
+      5: 10,
+      6: 15
+    };
+    return map[routeLength];
+  }
+
+  claimRoute(playerId: string, route_id: string, wild_route_color?: Color) {
     const player = this.getPlayerFromId(playerId);
 
     if (!player) return;
     if (playerId !== this.activePlayerId) return;
 
+    const route = this.routes.find(r => r.id === route_id);
+    if (!route) return;
+
+    if (route.claimed_player_id) return;
+    
+    if (player.numTrainCars < route.path.length) return;
+
     // insufficient train cars
-    if (player.numTrainCars < route.numTrainCars) return;
+    if (player.numTrainCars < route.path.length) return;
     
     // no wild route color provided
     if (route.color === Color.Wild && wild_route_color === undefined) return;
 
-    const route_cost = route.numTrainCars;
+    const route_cost = route.path.length;
     let route_color = route.color;
 
     // if claiming a wild route, set color to supplied route color
@@ -130,16 +149,29 @@ export class Game {
       route_color = wild_route_color as Color;
     }
 
-    // not enough wild cards
-    const player_wild_cards = player.trainCarCards.filter(c => c.color === Color.Wild);
-    if (player_wild_cards.length < num_wilds_to_use) return;
-    
     // not enough train cars of route color
     const player_cards_of_route_color = player.trainCarCards.filter(c => c.color === route_color);
-    if (player_cards_of_route_color.length + num_wilds_to_use < route_cost)return;
-    
+    const num_player_wild_cards = player.trainCarCards.filter(c => c.color === Color.Wild).length;
+    if (player_cards_of_route_color.length + num_player_wild_cards < route_cost) return;
+
+    const num_wilds_to_use = Math.max(route_cost - player_cards_of_route_color.length, 0);
+    const num_player_route_color_cards_to_use = route_cost - num_wilds_to_use;
+
+    for (let i = 0; i < num_wilds_to_use; i++) {
+      const idx_to_remove = player.trainCarCards.findIndex(c => c.color === Color.Wild);
+      player.trainCarCards.splice(idx_to_remove, 1);
+    }
+
+    for (let i = 0; i < num_player_route_color_cards_to_use; i++) {
+      const idx_to_remove = player.trainCarCards.findIndex(c => c.color === route_color);
+      player.trainCarCards.splice(idx_to_remove, 1);
+    }
+
     player.routes.push(route);
-    this.unclaimedRoutes = this.unclaimedRoutes.filter(r => r.id !== route.id);
+    player.points += this.pointsFromRouteLength(route.path.length);
+    player.numTrainCars -= route.path.length;
+    route.claimed_player_id = player.id;
+    this.nextTurn();
   }
 
   claimFaceUpTrainCarCard(playerId: string, cardId: string) {
@@ -262,7 +294,7 @@ export class Game {
       numTrainCarCards: this.trainCarCardDeck.cards.length,
       numTicketCards: this.ticketCardDeck.cards.length,
       players: this.players.map(p => p.getSanitizedPlayer()),
-      unclaimedRoutes: this.unclaimedRoutes,
+      routes: this.routes,
       activePlayerId: this.activePlayerId,
       turnTimer: this.turnTimer,
       startTime: this.startTime,

@@ -8,7 +8,7 @@ export type Game = {
   numTrainCarCards: number;
   numTicketCards: number;
   players: OtherPlayer[];
-  unclaimedRoutes: Route[];
+  routes: Route[];
   activePlayerId: string;
   turnTimer: number;
   startTime: number;

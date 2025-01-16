@@ -1,5 +1,6 @@
 import { createContext, useContext, useReducer } from "react";
 import { Player } from "../../types/Player";
+import { PlayerColor } from "../../api/types";
 
 const PlayerContext = createContext({} as PlayerContextValue);
 
@@ -16,7 +17,8 @@ const defaultPlayer = {
   points: 0,
   routes: [],
   numTrainCars: 0,
-  proposedTicketCards: []
+  proposedTicketCards: [],
+	color: PlayerColor.RED
 };
 
 export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
