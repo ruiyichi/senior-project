@@ -5,6 +5,7 @@ import { UserImage } from "./UserImage";
 import { Player } from "api/classes/Player";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_LENGTH_TO_POINTS } from "../../api/constants";
+import { useSocket } from "../contexts/SocketContext";
 
 const Scoreboard = () => {
   const { finalGame } = useGame();
@@ -12,6 +13,7 @@ const Scoreboard = () => {
   const [showScoreboard, setShowScoreboard] = useState(true);
   
   const navigate = useNavigate();
+  const { socketRef } = useSocket();
 
   if (!finalGame) {
     return;
@@ -75,7 +77,13 @@ const Scoreboard = () => {
               );
             })}
 
-            <button onClick={() => navigate('/')} style={{ width: '10vw', height: '10vh', fontSize: '1vw', borderRadius: '25px' }}>
+            <button 
+              onClick={() => {
+                socketRef.current?.emit('finishGame');
+                navigate('/');
+              }} 
+              style={{ width: '10vw', height: '10vh', fontSize: '1vw', borderRadius: '25px' }}
+            >
               Return to main menu
             </button>
           </div>

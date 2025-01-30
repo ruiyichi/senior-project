@@ -239,6 +239,10 @@ function init_websocket_server() {
 
 			// map each player id to game
 			players.forEach(player => player_id_to_game_id[player.id] = game.id);
+			
+			// delete lobby
+			delete lobby_id_to_lobby[lobby.code];
+			emitLobbies();
 
 			// remove each player from lobby socket
 			const lobby_socket_ids = getSocketIdsInRoom(lobby.code);
@@ -252,11 +256,6 @@ function init_websocket_server() {
 				socket?.join(game.id);
 			});
 
-			// delete lobby
-			delete lobby_id_to_lobby[lobby.code];
-			
-			console.log(lobby_id_to_lobby)
-			console.log(player_id_to_lobby_id);
 			game.startGame();
 			emitGameToAllClients(game.id);
 			emitRespectivePlayers();
@@ -347,6 +346,14 @@ function init_websocket_server() {
 			}
 		}
 
+		const finishGame = () => {
+			const game = getGame();
+			if (!game) return;
+
+			delete player_id_to_game_id[user.id];
+			socket?.leave(game.id);
+		}
+
 		socket.on("disconnect", handleDisconnect);
 		socket.on("createLobby", createLobby);
 		socket.on("emitLobbies", emitLobbies);
@@ -358,6 +365,7 @@ function init_websocket_server() {
 		socket.on("playerActionTicketCard", playerActionTicketCard);
 		socket.on("playerClaimRoute", playerClaimRoute);
 		socket.on("playerPass", playerPass);
+		socket.on("finishGame", finishGame);
 
 		// Send on connect
 		handleSocketConnect();
