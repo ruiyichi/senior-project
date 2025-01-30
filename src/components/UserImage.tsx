@@ -8,16 +8,19 @@ interface UserImageProps {
   onClick?: MouseEventHandler<HTMLImageElement>, 
   size?: number, 
   label?: string, 
-  orientation?: "horizontal" | "vertical"
+  orientation?: "horizontal" | "vertical",
+	color?: string
 }
 
-export const UserImage = ({ user, onClick, size=50, label, orientation="vertical" }: UserImageProps) => {
+export const UserImage = ({ user, onClick, size=50, label, orientation="vertical", color='white' }: UserImageProps) => {
 	return (
 		<div className={classNames({
 			'user-image-container': true,
 			'horizontal': orientation === "horizontal"
 		})}>
-			{label || user.username || 'username'}
+			<label style={{ color }}>
+				{label || user.username || 'username'}
+			</label>
 			<motion.img 
 				className={classNames({
 					'user-image': true,

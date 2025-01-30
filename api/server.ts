@@ -177,7 +177,7 @@ function init_websocket_server() {
 			const sockets_in_game = getSocketIdsInRoom(game.id);
 			sockets_in_game?.forEach(socket_id => {
 				const player = socket_id_to_user[socket_id];
-				getSocketByID(socket_id)?.emit("updatePlayer", game.players.find(p => p.id === player.id));
+				getSocketByID(socket_id)?.emit("updatePlayer", game.players.find(p => p.id === player.id)?.getSanitizedPlayer());
 			});
 		}
 
@@ -217,8 +217,8 @@ function init_websocket_server() {
 			const lobby = lobby_id_to_lobby[lobby_id];
 
 			const players = lobby.players;
-			const playerColors = Object.keys(PlayerColor);
-			const game_players = players.map((p, i) => new Player(p.id, p.username, playerColors[i] as PlayerColor));
+			const playerColors = Object.values(PlayerColor);
+			const game_players = players.map((p, i) => new Player(p.id, p.username, playerColors[i]));
 			const game = new Game(game_players);
 
 			game_id_to_game[game.id] = game;

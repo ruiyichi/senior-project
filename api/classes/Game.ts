@@ -87,7 +87,7 @@ export class Game {
   }
 
   initializeTicketCardDeck() {
-    const all_ticket_cards = TRAIN_TICKETS.map(ticket => ({ id: uuid(), ...ticket }));
+    const all_ticket_cards = TRAIN_TICKETS.map(ticket => ({ id: uuid(), complete: false, ...ticket }));
     
     const deck = new Deck(all_ticket_cards);
     deck.shuffle();
@@ -157,19 +157,29 @@ export class Game {
     const num_wilds_to_use = Math.max(route_cost - player_cards_of_route_color.length, 0);
     const num_player_route_color_cards_to_use = route_cost - num_wilds_to_use;
 
+    const removed_cards = [] as TrainCarCard[];
     for (let i = 0; i < num_wilds_to_use; i++) {
       const idx_to_remove = player.trainCarCards.findIndex(c => c.color === Color.Wild);
+      removed_cards.push(player.trainCarCards[idx_to_remove]);
       player.trainCarCards.splice(idx_to_remove, 1);
     }
 
     for (let i = 0; i < num_player_route_color_cards_to_use; i++) {
       const idx_to_remove = player.trainCarCards.findIndex(c => c.color === route_color);
+      removed_cards.push(player.trainCarCards[idx_to_remove]);
       player.trainCarCards.splice(idx_to_remove, 1);
     }
 
+    removed_cards.forEach(c => this.trainCarCardDeck.discard(c));
     player.routes.push(route);
     player.points += this.pointsFromRouteLength(route.path.length);
     player.numTrainCars -= route.path.length;
+    player.routeGraph.addRoute(route.start, route.destination);
+    player.ticketCards.filter(c => !c.complete).forEach(c => {
+      if (player.routeGraph.hasPath(c.start, c.destination)) {
+        c.complete = true;
+      }
+    });
     route.claimed_player_id = player.id;
     this.nextTurn();
   }
@@ -293,7 +303,7 @@ export class Game {
       id: this.id,
       numTrainCarCards: this.trainCarCardDeck.cards.length,
       numTicketCards: this.ticketCardDeck.cards.length,
-      players: this.players.map(p => p.getSanitizedPlayer()),
+      players: this.players.map(p => p.getSanitizedPlayerForGame()),
       routes: this.routes,
       activePlayerId: this.activePlayerId,
       turnTimer: this.turnTimer,

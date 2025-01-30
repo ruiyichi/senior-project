@@ -29,13 +29,13 @@ const BottomBarContainer = () => {
         <TicketCardSelection />
       :
         <>
-          <div style={{ position: 'absolute', right: 0, top: 0 }}>
-            <UserImage user={user} label={"YOU"} size={40} />
+          <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+            <UserImage user={user} label={"YOU"} size={30} color={player.color} />
           </div>
-          <div style={{ display: 'flex', gap: '1vw' }}>
+          <div style={{ display: 'flex', gap: '1vw', flexWrap: 'wrap' }}>
             {player.ticketCards.map(c => {
               return (
-                <TicketCard key={c.id} card={c} />
+                <TicketCard key={c.id} card={c} showStatus={true} />
               )
             })}
 

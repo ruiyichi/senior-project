@@ -14,8 +14,8 @@ export enum PlayerColor {
   RED = '#FF0000',
   BLACK = '#000000',
   GREEN = '#00FF00',
-  BLUE = '0000FF',
-  YELLOW = 'FFFF00'
+  BLUE = '#0000FF',
+  YELLOW = '#FFFF00'
 }
 
 export type TicketCard = {
@@ -23,6 +23,7 @@ export type TicketCard = {
   start: string;
   destination: string;
   points: number;
+  complete: boolean;
 };
 
 export type TrainCarCard = {

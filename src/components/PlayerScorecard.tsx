@@ -5,6 +5,8 @@ import { SERVER_URI } from "../constants";
 import FaceDownTicketCard from "../assets/ticket_card.jpg";
 import FaceDownTrainCardHorizontal from "../assets/face_down_train_card_horizontal.jpg";
 import TrainCarIcon from "../assets/train_car_icon.png";
+import TrainCarIconWhite from "../assets/train_car_icon_white.png";
+import { PlayerColor } from "../../api/types";
 
 const PlayerScorecard = ({ player }: { player: OtherPlayer }) => {
   return (
@@ -22,20 +24,20 @@ const PlayerScorecard = ({ player }: { player: OtherPlayer }) => {
         Points: {player.points}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-        <div>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
           {player.username}
         </div>
-        <div style={{ display: 'flex', gap: '5px'}}>
+        <div style={{ display: 'flex', gap: '5px', justifyContent: 'space-between' }}>
           {player.numTicketCards}
-          <img src={FaceDownTicketCard} style={{ width: '40px' }} />
+          <img src={FaceDownTicketCard} style={{ width: '40px' }} title="Ticket cards" />
         </div>
-        <div style={{ display: 'flex', gap: '5px'}}>
+        <div style={{ display: 'flex', gap: '5px', justifyContent: 'space-between' }}>
           {player.numTrainCarCards}
-          <img src={FaceDownTrainCardHorizontal} style={{ width: '40px' }} />
+          <img src={FaceDownTrainCardHorizontal} style={{ width: '40px' }} title="Train cards" />
         </div>
-        <div style={{ display: 'flex', gap: '5px', alignItems: 'flex-end' }}>
+        <div style={{ display: 'flex', gap: '5px', alignItems: 'flex-end', justifyContent: 'space-between' }}>
           {player.numTrainCars}
-          <img src={TrainCarIcon} style={{ width: '35px', height: '30px' }} />
+          <img src={player.color === PlayerColor.BLACK ? TrainCarIconWhite : TrainCarIcon} style={{ width: '35px', height: '30px' }} title="Train cars" />
         </div>
       </div>
     </div>

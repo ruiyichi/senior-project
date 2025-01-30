@@ -260,11 +260,12 @@ button {
 }
 
 .user-image-container {
-  font-size: 25px;
+  font-size: 1.3em;
   color: white;
   user-select: none;
-  gap: 0.5em;
+  gap: 0.2em;
   padding: 5px 5px;
+  display: flex;
 
   &.vertical {
     flex-direction: column;
@@ -343,11 +344,11 @@ button {
     }
 
     #bottom-bar-container {
+      padding: 0.4em 0.4em;
       position: relative;
       align-items: center;
       overflow-y: auto;
       display: flex;
-      justify-content: center;
       flex-direction: column;
       border-top: .8vh solid black;
       border-bottom: .8vh solid black;

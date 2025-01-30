@@ -18,6 +18,7 @@
     "ts-node": "^10.9.2"
   },
   "dependencies": {
+    "@dagrejs/graphlib": "^2.2.4",
     "@types/express": "^4.17.20",
     "@types/node-fetch": "^2.6.11",
     "@types/uuid": "^10.0.0",

@@ -19,18 +19,21 @@ export class Deck<T> {
   }
 
   deal() {
+    let card_to_return: undefined | T = undefined;
     if (this.cards.length > 0) {
-      return this.cards.pop();
+      card_to_return = this.cards.pop();
     }
 
-    if (this.discards.length > 0) {
+    if (this.cards.length === 0 && this.discards.length > 0) {
       this.cards = this.discards;
       this.shuffle();
       this.discards = [];
-      return this.cards.pop()
+      if (!card_to_return) {
+        return this.cards.pop()
+      }
     }
 
-    return undefined;
+    return card_to_return;
   }
 
   discard(card: T) {

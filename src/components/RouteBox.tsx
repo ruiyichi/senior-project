@@ -15,51 +15,54 @@ type RouteBoxProps = {
   claimed_color?: PlayerColor
 }
 const RouteBox = ({ route_position, color, route, claimed_color, angle=0 }: RouteBoxProps) => {
-  
   const { selectedRoute } = useGame();
 
   const size = 1;
 
-  const get_dimensions_str = (size: number) => {
-    return `${size}vw`;
-  }
+  const get_dimensions_str = (size: number) => `${size}vw`;
+  
   const width_str = get_dimensions_str(0.8 * size);
   const height_str = get_dimensions_str(2 * size);
 
-    const ColorMap = {
-      RED: TrainCarIconRed,
-      BLACK: TrainCarIconBlack,
-      BLUE: TrainCarIconBlue,
-      YELLOW: TrainCarIconYellow,
-      GREEN: TrainCarIconGreen,
-    };
-
-    if (claimed_color !== undefined) {
-      console.log(claimed_color)
-      console.log(ColorMap[claimed_color])
-    }
+  const ColorMap = {
+    [PlayerColor.RED]: TrainCarIconRed,
+    [PlayerColor.BLACK]: TrainCarIconBlack,
+    [PlayerColor.BLUE]: TrainCarIconBlue,
+    [PlayerColor.YELLOW]: TrainCarIconYellow,
+    [PlayerColor.GREEN]: TrainCarIconGreen,
+  };
 
   return (
-    <motion.svg 
-      width={width_str} 
-      height={height_str} 
-      transform={`rotate(${angle})`}
-      animate={selectedRoute && route.id === selectedRoute.id ? "active" : "default"} 
-      style={{ position: 'absolute', left: `${route_position.x}%`, top: `${route_position.y}%`, transformBox: 'fill-box', transformOrigin: 'center', cursor: 'pointer' }}
-      variants={{
-        hover: {
-          width: get_dimensions_str(0.8 * 1.1 * size),
-          height: get_dimensions_str(2 * 1.1 * size)
-        },
-        active: {
-          width: get_dimensions_str(0.8 * 1.1 * size),
-          height: get_dimensions_str(2 * 1.1 * size)
-        }
-      }}
-    >
-      <rect x="0" y="0" width={width_str} height={height_str} fill={color} stroke="brown" strokeWidth=".25vw" />
-      {claimed_color && <image x="0" y="0" width={width_str} height={height_str} href={ColorMap[claimed_color]}></image>}
-    </motion.svg>
+    <>
+      <motion.svg 
+        cursor={claimed_color ? 'auto' : 'pointer'}
+        width={width_str} 
+        height={height_str} 
+        transform={`rotate(${angle})`}
+        animate={selectedRoute && route.id === selectedRoute.id ? "active" : "default"} 
+        style={{ position: 'absolute', left: `${route_position.x}%`, top: `${route_position.y}%`, transformBox: 'fill-box', transformOrigin: 'center' }}
+        variants={{
+          hover: {
+            width: get_dimensions_str(0.8 * 1.1 * size),
+            height: get_dimensions_str(2 * 1.1 * size)
+          },
+          active: {
+            width: get_dimensions_str(0.8 * 1.1 * size),
+            height: get_dimensions_str(2 * 1.1 * size)
+          }
+        }}
+      >
+        <rect x="0" y="0" width={width_str} height={height_str} fill={claimed_color ? '#D2B48C' : color} stroke="brown" strokeWidth=".25vw" />
+      </motion.svg>
+      <motion.svg
+        width={width_str} 
+        height={height_str} 
+        cursor={claimed_color ? 'auto' : 'pointer'}
+        style={{ position: 'absolute', left: `${route_position.x}%`, top: `${route_position.y}%`, transformBox: 'fill-box', transformOrigin: 'center' }}
+      >
+        {claimed_color && <image x="0" y="0" width={width_str} height={height_str} href={ColorMap[claimed_color]} />}
+      </motion.svg>
+    </>
   );
 }
 

@@ -16,7 +16,7 @@ const TrainCarCard = ({ color, size=7, orientation='horizontal', count, onClick,
 
   return (
     <motion.div 
-      style={{ position: 'relative', cursor: 'pointer', height: 'fit-content' }}
+      style={{ position: 'relative', cursor: 'pointer', height: 'fit-content', userSelect: 'none' }}
       variants={{
         hover: {
           scale: 1.05

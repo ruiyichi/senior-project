@@ -76,7 +76,10 @@ const StatusMessage = () => {
               </div>
             );
           }
-          return `Your turn! Draw train cards, take tickets, or claim a route!`;
+          if (game.numTrainCarCards === 0 && game.faceUpTrainCarCards.length === 0) {
+            return 'Your turn! Take tickets, or claim a route!';
+          }
+          return 'Your turn! Draw train cards, take tickets, or claim a route!';
         } else {
           return `Waiting for ${activePlayer.username}'s turn`;
         }
@@ -85,7 +88,7 @@ const StatusMessage = () => {
   }
 
   return (
-    <div style={{ position: 'absolute', zIndex: 1, left: '0%', bottom: '0%', fontSize: '28px', backgroundColor: 'white', width: '100%', textAlign: 'center' }}>
+    <div style={{ position: 'absolute', zIndex: 1, left: '0%', bottom: '0%', fontSize: '1.5vw', backgroundColor: 'white', width: '100%', textAlign: 'center' }}>
       {getStatusMessage()}
     </div>
   );

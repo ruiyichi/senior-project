@@ -42,6 +42,7 @@ const RouteBoxes = ({ path, color, route }: RouteBoxesProps) => {
           color={color} 
           angle={p.angle} 
           claimed_color={game.players.find(p => p.id === route.claimed_player_id)?.color}
+          key={`${p.x} ${p.y}`}
         />
       ))}
     </motion.div>
