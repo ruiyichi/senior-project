@@ -2,6 +2,7 @@ import { useSocket } from "../contexts/SocketContext";
 import { Color } from "../../api/types";
 import { useGame } from "../contexts/GameContext";
 import { usePlayer } from "../contexts/PlayerContext";
+import { GameStatus } from "../../api/classes/Game";
 
 const StatusMessage = () => {
   const { game, selectedRoute, selectedCardColor, setSelectedCardColor, setSelectedRoute } = useGame();
@@ -12,7 +13,8 @@ const StatusMessage = () => {
     0: 'Unable to claim route',
     1: 'Need more cards to claim route!',
     2: 'Select a card color to claim route!',
-    3: 'Claim route!'
+    3: 'Claim route!',
+    4: 'Insufficient train cars'
   };
 
   const ableToClaimSelectedRoute = () => {
@@ -44,10 +46,13 @@ const StatusMessage = () => {
       return 3;
     }
 
-    return player.trainCarCards.filter(c => c.color === selectedRoute.color || c.color === Color.Wild).length >= selectedRoute.path.length ? 3 : 1;
+    return player.trainCarCards.filter(c => c.color === selectedRoute.color || c.color === Color.Wild).length >= selectedRoute.path.length ? (player.numTrainCars >= selectedRoute.path.length ? 3 : 4) : 1;
   }
 
   const getStatusMessage = () => {
+    if (game.status === GameStatus.COMPLETE) {
+      return 'Game completed.';
+    }
     if (player.proposedTicketCards.length > 0) {
       return 'Select ticket cards';
     } else {
@@ -65,7 +70,7 @@ const StatusMessage = () => {
                   <button 
                     disabled={ableToClaim !== 3}
                     onClick={() => {
-                      socketRef.current?.emit("playerClaimRoute", activePlayer.id, selectedRoute.id, selectedCardColor);
+                      socketRef.current?.emit("playerClaimRoute", selectedRoute.id, selectedCardColor);
                       setSelectedCardColor(undefined);
                       setSelectedRoute(undefined);
                     }}
@@ -76,10 +81,21 @@ const StatusMessage = () => {
               </div>
             );
           }
-          if (game.numTrainCarCards === 0 && game.faceUpTrainCarCards.length === 0) {
-            return 'Your turn! Take tickets, or claim a route!';
-          }
-          return 'Your turn! Draw train cards, take tickets, or claim a route!';
+
+          return (
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '1vw', alignItems: 'center' }}>
+              {(game.numTrainCarCards === 0 && game.faceUpTrainCarCards.length === 0) ? 'Your turn! Take tickets, or claim a route!' : 'Your turn! Draw train cards, take tickets, or claim a route!'}
+              <button style={{ width: '8vw', fontSize: '0.7vw', height: '3vh' }}
+                onClick={() => {
+                  socketRef.current?.emit("playerPass");
+                  setSelectedCardColor(undefined);
+                  setSelectedRoute(undefined);
+                }}
+              >
+                Pass and end turn
+              </button>
+            </div>
+          );
         } else {
           return `Waiting for ${activePlayer.username}'s turn`;
         }

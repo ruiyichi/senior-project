@@ -33,6 +33,39 @@ export class RouteGraph {
   }
 
   longestPathLength() {
-    return 0;
+    let longestPath = 0;
+    const graph = this.graph;
+
+    function dfs(city: string, path: string[], visited: Set<string>) {
+      visited.add(city);
+      let path_length = 0;
+      if (path.length > 1) {
+        for (let i = 0; i < path.length; i++) {
+          if (i + 1 === path.length) continue;
+          const first_city = path[i];
+          const second_city = path[i + 1];
+          const route = TRAIN_ROUTES.find(r => (r.start === first_city && r.destination === second_city) || (r.start === second_city && r.destination === first_city));
+          if (route) {
+            path_length += route.path.length;
+          }
+        }
+      }
+      if (path_length > longestPath) {
+        longestPath = path_length;
+      }
+
+      for (const neighbor of graph.neighbors(city) || []) {
+        if (!visited.has(neighbor)) {
+          dfs(neighbor, [...path, neighbor], visited);
+        }
+      }
+      visited.delete(city);
+    }
+
+    for (const city of graph.nodes()) {
+      dfs(city, [city], new Set());
+    }
+
+    return longestPath;
   }
 }

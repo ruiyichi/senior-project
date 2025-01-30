@@ -9,6 +9,7 @@ import { useGame } from "./GameContext";
 import { Game } from "types/Game";
 import { Player } from "types/Player";
 import { usePlayer } from "./PlayerContext";
+import { Game as finalGame } from "../../api/classes/Game";
 
 type SocketContextValue = {
   socketRef: React.MutableRefObject<Socket | undefined>,
@@ -22,7 +23,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useUser();
 	const { updateLobbies } = useLobbies();
 	const { updateLobby } = useLobby();
-	const { updateGame } = useGame();
+	const { updateGame, setFinalGame } = useGame();
 	const { updatePlayer } = usePlayer();
 
   useEffect(() => {
@@ -32,6 +33,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 			socketRef.current.on("updateLobby", payload => updateLobby(payload as WebsocketLobby));
 			socketRef.current.on("updateGame", payload => updateGame(payload as Game));
 			socketRef.current.on("updatePlayer", payload => updatePlayer(payload as Player));
+			socketRef.current.on("updateFinalGame", payload => setFinalGame(payload as finalGame));
 		}
 
 		return () => {

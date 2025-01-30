@@ -10,6 +10,9 @@ import { useSocket } from "../contexts/SocketContext";
 import { ACTION } from "../../api/constants";
 import BottomBarContainer from "../components/BottomBarContainer";
 import { OtherPlayer } from "types/OtherPlayer";
+import RouteLengthPoints from "../components/RouteLengthPoints";
+import { GameStatus } from "../../api/classes/Game";
+import Scoreboard from "../components/Scoreboard";
 
 const Game = () => {
   const { game } = useGame();
@@ -19,55 +22,60 @@ const Game = () => {
   const activePlayer = { ...player, numTrainCarCards: player.trainCarCards.length, numTicketCards: player.ticketCards.length } as OtherPlayer;
 
   return (
-    <div id='game-container'>
-      <div id='left-container'>
-        {game.players.filter(p => p.id !== player.id).map(p => {
-          return (
-            <PlayerScorecard key={p.id} player={p} />
-          )
-        })}
-        <PlayerScorecard key={player.id} player={activePlayer} />
-      </div>
-      <div id='middle-container'>
-        <div id='map-container'>
-          <StatusMessage />
-          <Map />
-        </div>
-  
-        <BottomBarContainer />
-      </div>
-      <div id='right-side-container'>
-        <div>
-          <TicketCardDeckPlaceholder 
-            onClick={(game.activePlayerAction === ACTION.NO_ACTION) ? () => {
-              socketRef.current?.emit("playerActionTicketCard");
-            } : undefined}
-          />
-          <TrainCarCardDeckPlaceholder 
-            orientation="horizontal" 
-            onClick={(game.activePlayerAction === ACTION.NO_ACTION || game.activePlayerAction === ACTION.DRAW_CARDS) ? () => {
-              socketRef.current?.emit("playerKeepTrainCarCard");
-            } : undefined}
-          />
-        </div>
-        
-        <div>
-          {game.faceUpTrainCarCards.map(c => {
-            const onClick = (game.activePlayerAction === ACTION.NO_ACTION || game.activePlayerAction === ACTION.DRAW_CARDS) ? () => {
-              socketRef.current?.emit("playerKeepTrainCarCard", c.id);
-            } : undefined;
-
+    <>
+      {game.status === GameStatus.COMPLETE && <Scoreboard />}
+      <div id='game-container'>
+        <div id='left-container'>
+          {game.players.filter(p => p.id !== player.id).map(p => {
             return (
-              <TrainCarCard 
-                key={c.id} 
-                color={c.color} 
-                onClick={onClick}
-              />
+              <PlayerScorecard key={p.id} player={p} />
             )
           })}
+          <PlayerScorecard key={player.id} player={activePlayer} />
+        </div>
+        <div id='middle-container'>
+          <div id='map-container'>
+            <StatusMessage />
+            <Map />
+          </div>
+    
+          <BottomBarContainer />
+        </div>
+        <div id='right-side-container'>
+          <div>
+            <TicketCardDeckPlaceholder 
+              onClick={(game.activePlayerAction === ACTION.NO_ACTION) ? () => {
+                socketRef.current?.emit("playerActionTicketCard");
+              } : undefined}
+            />
+            <TrainCarCardDeckPlaceholder 
+              orientation="horizontal" 
+              onClick={(game.activePlayerAction === ACTION.NO_ACTION || game.activePlayerAction === ACTION.DRAW_CARDS) ? () => {
+                socketRef.current?.emit("playerKeepTrainCarCard");
+              } : undefined}
+            />
+          </div>
+          
+          <div>
+            {game.faceUpTrainCarCards.map(c => {
+              const onClick = (game.activePlayerAction === ACTION.NO_ACTION || game.activePlayerAction === ACTION.DRAW_CARDS) ? () => {
+                socketRef.current?.emit("playerKeepTrainCarCard", c.id);
+              } : undefined;
+
+              return (
+                <TrainCarCard 
+                  key={c.id} 
+                  color={c.color} 
+                  onClick={onClick}
+                />
+              )
+            })}
+          </div>
+
+          <RouteLengthPoints />
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

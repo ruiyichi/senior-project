@@ -58,10 +58,10 @@ function init_server() {
 import { Socket, Server } from "socket.io";
 import jwt, { Secret } from 'jsonwebtoken';
 import { createLobbyCode } from "./utils";
-import { ACTION, MAX_ITER } from "./constants";
+import { MAX_ITER } from "./constants";
 import { WebsocketUser } from "./types/WebsocketUser";
 import { WebsocketLobby } from "./types/WebsocketLobby";
-import { Game } from "./classes/Game";
+import { Game, GameStatus } from "./classes/Game";
 import { Player } from "./classes/Player";
 import { Color, PlayerColor } from "./types";
 
@@ -163,6 +163,13 @@ function init_websocket_server() {
 			sockets_in_game?.forEach(socket_id => getSocketByID(socket_id)?.emit("updateGame", game.getSanitizedGame()));
 		}
 
+		const emitFinalGameToAllClients = (game_id: string) => {
+			const sockets_in_game = getSocketIdsInRoom(game_id);
+			const game = game_id_to_game[game_id];
+			if (!game) return;
+			sockets_in_game?.forEach(socket_id => getSocketByID(socket_id)?.emit("updateFinalGame", game));
+		}
+
 		const getGame = () => {
 			const game_id = player_id_to_game_id[user.id];
 			if (!game_id) return;
@@ -186,6 +193,13 @@ function init_websocket_server() {
 			if (!game) return;
 
 			socket.emit("updateGame", game.getSanitizedGame());
+		}
+
+		const emitFinalGame = () => {
+			const game = getGame();
+			if (!game) return;
+
+			socket.emit("updateFinalGame", game);
 		}
 
 		const joinLobby = (lobbyCode: string, callback: Function) => {
@@ -254,8 +268,13 @@ function init_websocket_server() {
 			if (game_id !== undefined) {
 				const game = game_id_to_game[game_id];
 				socket.join(game.id);
-				emitGame();
-				emitRespectivePlayers();
+
+				if (game.status === GameStatus.COMPLETE) {
+					emitFinalGame();
+				} else {
+					emitGame();
+					emitRespectivePlayers();
+				}
 			} else {
 				emitLobbies();
 			}
@@ -270,6 +289,13 @@ function init_websocket_server() {
 			emitRespectivePlayers();
 		}
 
+		const onGameEnd = () => {
+			const game = getGame();
+			if (!game) return;
+
+			emitFinalGameToAllClients(game.id);
+		}
+
 		const playerKeepTrainCarCard = (card_id: string | undefined) => {
 			const game = getGame();
 			if (!game) return;
@@ -278,6 +304,10 @@ function init_websocket_server() {
 
 			emitGameToAllClients(game.id);
 			emitRespectivePlayers();
+
+			if (game.status === GameStatus.COMPLETE) {
+				onGameEnd();
+			}
 		}
 
 		const playerActionTicketCard = () => {
@@ -287,15 +317,35 @@ function init_websocket_server() {
 			game.actionTicketCards(user.id);
 			emitGameToAllClients(game.id);
 			emitRespectivePlayers();
+
+			if (game.status === GameStatus.COMPLETE) {
+				onGameEnd();
+			}
 		}
 
-		const playerClaimRoute = (player_id: string, route_id: string, color?: Color) => {
+		const playerClaimRoute = (route_id: string, color?: Color) => {
 			const game = getGame();
 			if (!game) return;
 
-			game.claimRoute(player_id, route_id, color);
+			game.claimRoute(route_id, color);
 			emitGameToAllClients(game.id);
 			emitRespectivePlayers();
+
+			if (game.status === GameStatus.COMPLETE) {
+				onGameEnd();
+			}
+		}
+
+		const playerPass = () => {
+			const game = getGame();
+			if (!game) return;
+			game.nextTurn();
+			emitGameToAllClients(game.id);
+			emitRespectivePlayers();
+
+			if (game.status === GameStatus.COMPLETE) {
+				onGameEnd();
+			}
 		}
 
 		socket.on("disconnect", handleDisconnect);
@@ -308,6 +358,7 @@ function init_websocket_server() {
 		socket.on("playerKeepTrainCarCard", playerKeepTrainCarCard);
 		socket.on("playerActionTicketCard", playerActionTicketCard);
 		socket.on("playerClaimRoute", playerClaimRoute);
+		socket.on("playerPass", playerPass);
 
 		// Send on connect
 		handleSocketConnect();

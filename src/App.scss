@@ -362,6 +362,8 @@ button {
   }
   
   #right-side-container {
+    display: flex;
+    flex-direction: column;
     padding: 5px 8px;
     width: 12.5vw;
     overflow-y: auto;

@@ -1,7 +1,7 @@
 import { Player } from "./Player";
 import { v4 as uuid } from "uuid";
 import { randomElementFromArr } from "../utils";
-import { ACTION, NUM_FACE_UP_TRAIN_CAR_CARDS, NUM_PROPOSED_TICKET_CARDS, NUM_STARTING_TRAIN_CAR_CARDS, TRAIN_CAR_CARD_TYPES, TRAIN_ROUTES, TRAIN_TICKETS } from "../constants";
+import { ACTION, NUM_FACE_UP_TRAIN_CAR_CARDS, NUM_PROPOSED_TICKET_CARDS, NUM_STARTING_TRAIN_CAR_CARDS, ROUTE_LENGTH_TO_POINTS, TRAIN_CAR_CARD_TYPES, TRAIN_ROUTES, TRAIN_TICKETS } from "../constants";
 import { Deck } from "./Deck";
 import { Color, Route, TicketCard, TrainCarCard } from "../types";
 
@@ -26,6 +26,8 @@ export class Game {
   activePlayerMaxNumDrawnCards: number;
   faceUpTrainCarCards: TrainCarCard[];
   status: GameStatus;
+  lastRoundPlayerId: null | string;
+  standings: string[];
   
   constructor(players: Player[]) {
     this.id = uuid();
@@ -42,9 +44,12 @@ export class Game {
     this.turnStartTime = 0;
     this.faceUpTrainCarCards = [] as TrainCarCard[];
     this.status = GameStatus.PENDING;
+    this.lastRoundPlayerId = null;
+    this.standings = [];
   }
 
   updateFaceUpTrainCarCards(replacements?: TrainCarCard[]) {
+    if (this.status === GameStatus.COMPLETE) return;
     if (!replacements) {
       for (let i = this.faceUpTrainCarCards.length; i < NUM_FACE_UP_TRAIN_CAR_CARDS; i++) {
         const card = this.trainCarCardDeck.deal();
@@ -111,22 +116,14 @@ export class Game {
   }
 
   pointsFromRouteLength(routeLength: number) {
-    const map = {
-      1: 1,
-      2: 2,
-      3: 4,
-      4: 7,
-      5: 10,
-      6: 15
-    };
-    return map[routeLength];
+    return ROUTE_LENGTH_TO_POINTS[routeLength];
   }
 
-  claimRoute(playerId: string, route_id: string, wild_route_color?: Color) {
-    const player = this.getPlayerFromId(playerId);
+  claimRoute(route_id: string, wild_route_color?: Color) {
+    if (this.status === GameStatus.COMPLETE) return;
+    const player = this.getPlayerFromId(this.activePlayerId);
 
     if (!player) return;
-    if (playerId !== this.activePlayerId) return;
 
     const route = this.routes.find(r => r.id === route_id);
     if (!route) return;
@@ -181,6 +178,7 @@ export class Game {
       }
     });
     route.claimed_player_id = player.id;
+    
     if (this.players.length < 4) {
       const duplicate_route = this.routes.find(r => route.id !== r.id && (r.start === route.start && r.destination === route.destination) || (route.destination === r.start && route.start === r.destination));
       if (duplicate_route) {
@@ -188,9 +186,14 @@ export class Game {
       }
     }
     this.nextTurn();
+
+    if (this.lastRoundPlayerId === null && player.numTrainCars <= 2) {
+      this.lastRoundPlayerId = player.id;
+    }
   }
 
   claimFaceUpTrainCarCard(playerId: string, cardId: string) {
+    if (this.status === GameStatus.COMPLETE) return;
     const player = this.getPlayerFromId(playerId);
 
     if (!player) return;
@@ -204,6 +207,7 @@ export class Game {
   }
 
   proposeTicketCards(player_id: string) {
+    if (this.status === GameStatus.COMPLETE) return;
     const player = this.getPlayerFromId(player_id);
     if (!player) return;
 
@@ -219,6 +223,7 @@ export class Game {
   }
 
   keepTicketCards(player_id: string, ticket_card_ids: string[]) {
+    if (this.status === GameStatus.COMPLETE) return;
     const player = this.getPlayerFromId(player_id);
     if (!player) return;
 
@@ -251,6 +256,7 @@ export class Game {
   }
 
   keepTrainCarCard(player_id: string, card_id: string | undefined) {
+    if (this.status === GameStatus.COMPLETE) return;
     if (this.activePlayerId !== player_id) return;
     
     const player = this.getPlayerFromId(player_id);
@@ -289,6 +295,7 @@ export class Game {
   }
 
   actionTicketCards(player_id: string) {
+    if (this.status === GameStatus.COMPLETE) return;
     if (this.activePlayerAction !== ACTION.NO_ACTION) return;
     if (player_id !== this.activePlayerId) return;
 
@@ -297,6 +304,7 @@ export class Game {
   }
 
   startGame() {
+    if (this.status === GameStatus.COMPLETE) return;
     this.status = GameStatus.IN_PROGRESS;
     this.dealInitialTrainCarCards();
     this.updateFaceUpTrainCarCards();
@@ -317,11 +325,66 @@ export class Game {
       turnStartTime: this.turnStartTime,
       faceUpTrainCarCards: this.faceUpTrainCarCards,
       status: this.status,
-      activePlayerAction: this.activePlayerAction
+      activePlayerAction: this.activePlayerAction,
+      lastRoundPlayerId: this.lastRoundPlayerId,
+      standings: this.standings
     };
   }
 
+  gameEnd() {
+    this.players.forEach(p => {
+      p.ticketCards.forEach(ticket_card => {
+        if (ticket_card.complete) {
+          p.points += ticket_card.points;
+        } else {
+          p.points -= ticket_card.points;
+        }
+      });
+    });
+
+    const player_id_to_longest_path_length = this.players.reduce((res, player) => {
+      res[player.id] = player.routeGraph.longestPathLength();
+      return res;
+    }, {} as Record<string, number>);
+    console.log(player_id_to_longest_path_length);
+
+    const longest_path_length = Math.max(...Object.values(player_id_to_longest_path_length));
+    this.players.forEach(p => {
+      if (player_id_to_longest_path_length[p.id] === longest_path_length) {
+        p.points += 10;
+        p.longestContinuousPath = true;
+      }
+    });
+
+    const player_ids = this.players.map(p => p.id);
+    this.standings = player_ids.sort((a, b) => {
+      const player_a = this.players.find(p => p.id === a) as Player;
+      const player_b = this.players.find(p => p.id === b) as Player;
+  
+      if (player_b.points !== player_a.points) {
+        return player_b.points - player_a.points;
+      }
+  
+      const num_completed_tickets_a = player_a.ticketCards.filter(c => c.complete).length;
+      const num_completed_tickets_b = player_b.ticketCards.filter(c => c.complete).length;
+  
+      if (num_completed_tickets_a !== num_completed_tickets_b) {
+          return num_completed_tickets_b - num_completed_tickets_a;
+      }
+  
+      return Number(player_b.longestContinuousPath) - Number(player_a.longestContinuousPath);
+    });
+
+    this.status = GameStatus.COMPLETE;
+  }
+
   nextTurn() {
+    if (this.status === GameStatus.COMPLETE) return;
+    if (this.lastRoundPlayerId === this.activePlayerId) {
+      this.gameEnd();
+      return;
+    }
+
     this.activePlayerNumDrawnCards = 0;
     this.activePlayerMaxNumDrawnCards = 2;
     this.activePlayerAction = ACTION.NO_ACTION;

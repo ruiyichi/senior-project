@@ -9,4 +9,5 @@ export type OtherPlayer = {
   routes: Route[];
   numTrainCars: number;
   color: PlayerColor;
+  longestContinuousPath: boolean;
 };

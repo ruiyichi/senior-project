@@ -16,4 +16,5 @@ export type Game = {
   faceUpTrainCarCards: TrainCarCard[];
   status: GameStatus;
   activePlayerAction: ACTION;
+  standings: string[];
 };

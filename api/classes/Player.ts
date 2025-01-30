@@ -13,6 +13,7 @@ export class Player {
   proposedTicketCards: TicketCard[];
   color: PlayerColor;
   routeGraph: RouteGraph;
+  longestContinuousPath: boolean;
 
   constructor(id: string, username: string, color: PlayerColor = PlayerColor.RED) {
     this.id = id;
@@ -25,6 +26,7 @@ export class Player {
     this.proposedTicketCards = [];
     this.color = color;
     this.routeGraph = new RouteGraph();
+    this.longestContinuousPath = false;
   }
 
   getSanitizedPlayerForGame() {
@@ -36,7 +38,8 @@ export class Player {
       points: this.points,
       routes: this.routes,
       numTrainCars: this.numTrainCars,
-      color: this.color
+      color: this.color,
+      longestContinuousPath: this.longestContinuousPath
     };
   }
 
@@ -50,7 +53,8 @@ export class Player {
       routes: this.routes,
       numTrainCars: this.numTrainCars,
       proposedTicketCards: this.proposedTicketCards,
-      color: this.color
+      color: this.color,
+      longestContinuousPath: this.longestContinuousPath
     };
   }
 }

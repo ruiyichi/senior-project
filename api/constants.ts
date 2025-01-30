@@ -1051,7 +1051,7 @@ export const TRAIN_ROUTES = [
     ],
   },
   {
-    start: "Atlanta",
+    start: "Miami",
     destination: "Charleston",
     color: Color.Pink,
     path: [
@@ -1216,4 +1216,13 @@ export enum ACTION {
   DRAW_CARDS,
   DRAW_TICKETS,
   CLAIM_ROUTE
+};
+
+export const ROUTE_LENGTH_TO_POINTS = {
+  1: 1,
+  2: 2,
+  3: 4,
+  4: 7,
+  5: 10,
+  6: 15
 };

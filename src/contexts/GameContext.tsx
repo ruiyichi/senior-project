@@ -3,12 +3,15 @@ import { Game } from "../../types/Game";
 import { GameStatus } from "../../api/classes/Game";
 import { ACTION } from "../../api/constants";
 import { Color, Route } from "api/types";
+import { Game as finalGame } from "../../api/classes/Game";
 
 const GameContext = createContext({} as GameContextValue);
 
 type GameContextValue = { 
 	game: Game,
 	updateGame: React.Dispatch<Game>,
+	finalGame: finalGame | undefined,
+	setFinalGame: React.Dispatch<React.SetStateAction<finalGame | undefined>>,
 	selectedRoute: Route | undefined,
 	setSelectedRoute: React.Dispatch<React.SetStateAction<Route | undefined>>,
 	selectedCardColor: Color | undefined,
@@ -27,7 +30,8 @@ const defaultGame = {
   turnStartTime: 0,
   faceUpTrainCarCards: [],
 	status: GameStatus.PENDING,
-	activePlayerAction: ACTION.NO_ACTION
+	activePlayerAction: ACTION.NO_ACTION,
+	standings: []
 };
 
 export const GameProvider = ({ children }: { children: React.ReactNode }) => {
@@ -36,6 +40,8 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 		return { ...game, ...payload };
 	}
 	const [game, updateGame] = useReducer(gameReducer, defaultGame);
+
+	const [finalGame, setFinalGame] = useState<finalGame | undefined>(undefined);
 
 	const [selectedRoute, setSelectedRoute] = useState<Route | undefined>(undefined);
 
@@ -47,7 +53,9 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 		selectedRoute,
 		setSelectedRoute,
 		selectedCardColor,
-		setSelectedCardColor
+		setSelectedCardColor,
+		finalGame,
+		setFinalGame
 	};
 
 	return (
