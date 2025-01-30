@@ -271,10 +271,9 @@ function init_websocket_server() {
 
 				if (game.status === GameStatus.COMPLETE) {
 					emitFinalGame();
-				} else {
-					emitGame();
-					emitRespectivePlayers();
 				}
+				emitGame();
+				emitRespectivePlayers();
 			} else {
 				emitLobbies();
 			}

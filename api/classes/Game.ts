@@ -346,7 +346,6 @@ export class Game {
       res[player.id] = player.routeGraph.longestPathLength();
       return res;
     }, {} as Record<string, number>);
-    console.log(player_id_to_longest_path_length);
 
     const longest_path_length = Math.max(...Object.values(player_id_to_longest_path_length));
     this.players.forEach(p => {

@@ -4,6 +4,7 @@ import { usePlayer } from "../contexts/PlayerContext";
 import { UserImage } from "./UserImage";
 import { Player } from "api/classes/Player";
 import { useNavigate } from "react-router-dom";
+import { ROUTE_LENGTH_TO_POINTS } from "../../api/constants";
 
 const Scoreboard = () => {
   const { finalGame } = useGame();
@@ -20,13 +21,22 @@ const Scoreboard = () => {
     <>
       {showScoreboard && 
       (
-        <div style={{ fontSize: '2vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgb(0, 0, 0, 0.7)', zIndex: '5', position: 'absolute', width: '100vw', height: '100vh', gap: '5vh' }}>
-          <div style={{ padding: '1em', alignItems: 'center', backgroundColor: 'white', display: 'flex', flexDirection: 'column', borderRadius: '20px', height: '80vh', width: '50vw' }}>
+        <div style={{ fontSize: '2vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgb(0, 0, 0, 0.7)', zIndex: '5', position: 'absolute', width: '100vw', height: '100vh' }}>
+          <div style={{ padding: '1em', alignItems: 'center', backgroundColor: 'white', display: 'flex', flexDirection: 'column', borderRadius: '20px', height: '80vh', width: '50vw', gap: '5vh', overflowY: 'auto' }}>
             <div style={{ fontSize: '3vh'}}>
               Scoreboard
             </div>
             {finalGame.standings.map((p_id, placement) => {
               const player = finalGame.players.find(p => p.id === p_id) as Player;
+              const num_player_routes = player.routes.reduce((res, route) => {
+                if (!res[route.path.length]) {
+                  res[route.path.length] = 0;
+                }
+
+                res[route.path.length] += 1;
+                return res
+              }, {});
+
               return (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
@@ -40,6 +50,14 @@ const Scoreboard = () => {
                       {player.points}
                     </div>
                   </div>
+                  {Object.keys(num_player_routes).sort().map(route_len => {
+                    const num_of_route_len = num_player_routes[route_len];
+                    return (
+                      <div style={{ color: 'green', alignSelf: 'flex-end' }}>
+                        {num_of_route_len} train(s) of length {route_len}: {num_of_route_len * ROUTE_LENGTH_TO_POINTS[route_len]} 
+                      </div>
+                    );
+                  })}
                   {player.ticketCards.map(ticket_card => {
                     return (
                       <div style={{ color: ticket_card.complete ? 'green' : 'red', alignSelf: 'flex-end' }}>
@@ -57,14 +75,14 @@ const Scoreboard = () => {
               );
             })}
 
-            <button onClick={() => navigate('/')}>
+            <button onClick={() => navigate('/')} style={{ width: '10vw', height: '10vh', fontSize: '1vw', borderRadius: '25px' }}>
               Return to main menu
             </button>
           </div>
         </div>
       )}
       
-      <button onClick={() => setShowScoreboard(prev => !prev)} style={{ zIndex: '5', position: 'absolute', right: 5, bottom: 5 }}>
+      <button onClick={() => setShowScoreboard(prev => !prev)} style={{ zIndex: '5', position: 'absolute', left: 25, bottom: 25, width: '10vw', height: '10vh', fontSize: '1vw', borderRadius: '25px' }}>
         {showScoreboard ? 'Hide' : 'Show'} scoreboard
       </button>
     </>
