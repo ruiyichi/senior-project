@@ -312,6 +312,10 @@ button {
   height: 100%;
 
   #left-container {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    gap: 5vh;
     width: 12.5vw;
     border-top: .8vh solid black;
     border-bottom: .8vh solid black;

@@ -3,6 +3,7 @@ import RouteBox from "./RouteBox"
 import { motion } from "framer-motion"
 import { useGame } from "../contexts/GameContext"
 import { usePlayer } from "../contexts/PlayerContext"
+import { ACTION } from "../../api/constants"
 
 type RouteBoxesProps = {
   path: {
@@ -22,7 +23,7 @@ const RouteBoxes = ({ path, color, route }: RouteBoxesProps) => {
     <motion.div 
       whileHover="hover"
       onClick={() => {
-        if (route.claimed_player_id) return;
+        if (route.claimed_player_id || route.disabled || game.activePlayerAction !== ACTION.NO_ACTION) return;
 
         const activePlayer = game.players.find(p => p.id === game.activePlayerId);
         if (!activePlayer || activePlayer.id !== player.id) return;

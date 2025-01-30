@@ -32,7 +32,7 @@ export class Game {
     this.trainCarCardDeck = this.initializeTrainCarCardDeck();
     this.ticketCardDeck = this.initializeTicketCardDeck();
     this.players = players;
-    this.routes = TRAIN_ROUTES.map(route => ({ id: uuid(), ...route }));
+    this.routes = TRAIN_ROUTES.map(route => ({ ...route, id: uuid(), disabled: false }));
     this.activePlayerId = randomElementFromArr(players).id;
     this.activePlayerAction = ACTION.NO_ACTION;
     this.activePlayerNumDrawnCards = 0;
@@ -181,6 +181,12 @@ export class Game {
       }
     });
     route.claimed_player_id = player.id;
+    if (this.players.length < 4) {
+      const duplicate_route = this.routes.find(r => route.id !== r.id && (r.start === route.start && r.destination === route.destination) || (route.destination === r.start && route.start === r.destination));
+      if (duplicate_route) {
+        duplicate_route.disabled = true;
+      }
+    }
     this.nextTurn();
   }
 

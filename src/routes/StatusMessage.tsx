@@ -35,11 +35,11 @@ const StatusMessage = () => {
 
       const colorsToClaimRouteWith = Object.keys(colorCounts).filter(color => colorCounts[color] + numWildCards >= selectedRoute.path.length);
 
-      if (colorsToClaimRouteWith.length === 0) return 1;
+      if (colorsToClaimRouteWith.length === 0 && numWildCards < selectedRoute.path.length) return 1;
 
       if (!selectedCardColor) return 2;
 
-      if (!colorsToClaimRouteWith.includes(selectedCardColor)) return 1;
+      if (!colorsToClaimRouteWith.includes(selectedCardColor) && numWildCards < selectedRoute.path.length) return 1;
 
       return 3;
     }

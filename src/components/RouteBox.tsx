@@ -52,7 +52,7 @@ const RouteBox = ({ route_position, color, route, claimed_color, angle=0 }: Rout
           }
         }}
       >
-        <rect x="0" y="0" width={width_str} height={height_str} fill={claimed_color ? '#D2B48C' : color} stroke="brown" strokeWidth=".25vw" />
+        <rect x="0" y="0" width={width_str} height={height_str} fill={claimed_color || route.disabled ? '#D2B48C' : color} stroke="brown" strokeWidth=".25vw" />
       </motion.svg>
       <motion.svg
         width={width_str} 

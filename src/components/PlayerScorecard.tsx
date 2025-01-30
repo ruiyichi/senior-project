@@ -7,10 +7,13 @@ import FaceDownTrainCardHorizontal from "../assets/face_down_train_card_horizont
 import TrainCarIcon from "../assets/train_car_icon.png";
 import TrainCarIconWhite from "../assets/train_car_icon_white.png";
 import { PlayerColor } from "../../api/types";
+import { usePlayer } from "../contexts/PlayerContext";
 
 const PlayerScorecard = ({ player }: { player: OtherPlayer }) => {
+  const { player: activePlayer } = usePlayer();
+
   return (
-    <div style={{ borderRadius: '20px', display: 'flex', backgroundColor: player.color, padding: '0.5em', color: 'white', gap: '20px', flexWrap: 'wrap' }}>
+    <div style={{ borderRadius: '20px', display: 'flex', backgroundColor: player.color, padding: '0.5em', color: 'white', gap: '1vw', flexWrap: 'wrap' }}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <motion.img 
           className={classNames({
@@ -25,7 +28,7 @@ const PlayerScorecard = ({ player }: { player: OtherPlayer }) => {
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
         <div style={{ display: 'flex', justifyContent: 'center' }}>
-          {player.username}
+          {activePlayer.id === player.id ? 'YOU' : player.username}
         </div>
         <div style={{ display: 'flex', gap: '5px', justifyContent: 'space-between' }}>
           {player.numTicketCards}

@@ -39,4 +39,5 @@ export type Route = {
   color: Color,
   path: { x: number, y: number, angle: number }[],
   claimed_player_id?: string;
+  disabled: boolean;
 };
