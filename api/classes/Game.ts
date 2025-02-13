@@ -4,6 +4,7 @@ import { randomElementFromArr } from "../utils";
 import { ACTION, NUM_FACE_UP_TRAIN_CAR_CARDS, NUM_PROPOSED_TICKET_CARDS, NUM_STARTING_TRAIN_CAR_CARDS, ROUTE_LENGTH_TO_POINTS, TRAIN_CAR_CARD_TYPES, TRAIN_ROUTES, TRAIN_TICKETS } from "../constants";
 import { Deck } from "./Deck";
 import { Color, Route, TicketCard, TrainCarCard } from "../types";
+import { Agent } from "./Agent";
 
 export enum GameStatus {
   PENDING,
@@ -28,8 +29,9 @@ export class Game {
   status: GameStatus;
   lastRoundPlayerId: null | string;
   standings: string[];
+  emit: Function;
   
-  constructor(players: Player[]) {
+  constructor(players: Player[], emit: Function) {
     this.id = uuid();
     this.trainCarCardDeck = this.initializeTrainCarCardDeck();
     this.ticketCardDeck = this.initializeTicketCardDeck();
@@ -46,6 +48,7 @@ export class Game {
     this.status = GameStatus.PENDING;
     this.lastRoundPlayerId = null;
     this.standings = [];
+    this.emit = emit;
   }
 
   updateFaceUpTrainCarCards(replacements?: TrainCarCard[]) {
@@ -253,9 +256,11 @@ export class Game {
     if (is_active_player_action) {
       this.nextTurn();
     }
+
+    this.performBotActions();
   }
 
-  keepTrainCarCard(player_id: string, card_id: string | undefined) {
+  keepTrainCarCard(player_id: string, card_id?: string | undefined) {
     if (this.status === GameStatus.COMPLETE) return;
     if (this.activePlayerId !== player_id) return;
     
@@ -310,6 +315,10 @@ export class Game {
     this.updateFaceUpTrainCarCards();
 
     this.players.forEach(p => this.proposeTicketCards(p.id));
+
+    this.players.filter(p => p.type === 'Agent').forEach(p => {
+      (p as Agent).selectTicketCards(this);
+    });
   }
 
   getSanitizedGame() {
@@ -390,5 +399,18 @@ export class Game {
 
     const currentPlayerIdIdx = this.players.findIndex(p => p.id === this.activePlayerId);
     this.activePlayerId = this.players[(currentPlayerIdIdx + 1) % this.players.length].id;
+
+    this.performBotActions();
+  }
+
+  performBotActions() {
+    const player = this.getPlayerFromId(this.activePlayerId);
+    if (!player) return;
+
+    if (player.type === 'Agent') {
+      console.log('perform turn');
+      (player as Agent).performTurn(this);
+      this.emit();
+    }
   }
 }

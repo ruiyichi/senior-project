@@ -18,8 +18,10 @@ const defaultPlayer = {
   routes: [],
   numTrainCars: 0,
   proposedTicketCards: [],
-	color: PlayerColor.RED
-};
+	color: PlayerColor.RED,
+	type: 'Agent',
+	longestContinuousPath: false
+} as Player;
 
 export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 	const PlayerReducer = (Player: Player, payload: Player) => {

@@ -276,6 +276,7 @@ button {
   display: flex;
   flex-direction: column;
   gap: 25px;
+  align-items: center;
 
   #lobby-info {
     padding: 15px 35px;
@@ -289,10 +290,25 @@ button {
     gap: 15px;
 
     #players-container {
+      gap: 25px;
+      display: flex;
+      flex-direction: column;
       flex-grow: 1;
       width: 100%;
-      background-color: rgba(150, 150, 150, 0.7);
       border-radius: 20px;
+
+      > div {
+        background-color: rgba(150, 150, 150, 0.7);
+        border: 1px solid black;
+        padding: 20px;
+        border-radius: 0.5em;
+        font-size: 1vw;
+      }
+
+      button {
+        font-size: 1vw;
+        width: auto;
+      }
     }
   }
 }

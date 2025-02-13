@@ -1,15 +1,17 @@
-import { MotionProps, motion } from "framer-motion";
+import { MotionProps, MotionStyle, motion } from "framer-motion";
 
 interface MenuButtonProps {
 	id?: string, 
 	onClick?: React.MouseEventHandler<HTMLButtonElement>, 
 	children: MotionProps['children'],
-	disabled?: boolean
+	disabled?: boolean,
+	style?: MotionStyle | undefined
 }
 
-const MenuButton = ({ id, onClick, children, disabled }: MenuButtonProps) => {
+const MenuButton = ({ id, onClick, children, disabled, style }: MenuButtonProps) => {
 	return (
 		<motion.button 
+			style={style}
 			disabled={disabled}
 			className='menu-button pointer'
 			id={id}

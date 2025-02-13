@@ -14,6 +14,7 @@ export class Player {
   color: PlayerColor;
   routeGraph: RouteGraph;
   longestContinuousPath: boolean;
+  type: 'Player' | 'Agent';
 
   constructor(id: string, username: string, color: PlayerColor = PlayerColor.RED) {
     this.id = id;
@@ -27,12 +28,14 @@ export class Player {
     this.color = color;
     this.routeGraph = new RouteGraph();
     this.longestContinuousPath = false;
+    this.type = 'Player';
   }
 
   getSanitizedPlayerForGame() {
     return {
       id: this.id,
       username: this.username,
+      type: this.type,
       numTrainCarCards: this.trainCarCards.length,
       numTicketCards: this.ticketCards.length,
       points: this.points,
@@ -47,6 +50,7 @@ export class Player {
     return {
       id: this.id,
       username: this.username,
+      type: this.type,
       trainCarCards: this.trainCarCards,
       ticketCards: this.ticketCards,
       points: this.points,

@@ -52,7 +52,7 @@ const Lobby = () => {
 						</div>
 					</div>
 					<div id='players-container'>
-						<div>
+						<div style={{ display: 'flex', gap: '5px', alignItems: 'center', justifyContent: 'center' }}>
 							<Crown />
 							{is_host ?
 								"You"
@@ -66,6 +66,21 @@ const Lobby = () => {
 									{player.id === user.id ? "You" : player.username}
 								</div>
 							)
+						})}
+						{Array.from({ length: lobby.maxPlayers - lobby.players.length }).map(() => {
+							return (
+								<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px' }}>
+									<div style={{ flex: 1 }}>
+										Empty Slot
+									</div>
+									{
+										is_host && 
+										<div style={{ flex: 2 }}>
+											<MenuButton style={{ width: '100%' }} onClick={() => socketRef.current?.emit("lobbyAddBot")}> Add AI </MenuButton>
+										</div>
+									}
+								</div>
+							);
 						})}
 					</div>
 					{is_host &&

@@ -10,6 +10,7 @@ import { connectDB } from "./config/dbConnection";
 import cookieParser from "cookie-parser";
 import verifyJWT from "./middleware/verifyJWT";
 import path from "path";
+import { v4 as uuid } from "uuid";
 
 dotenv.config();
 
@@ -64,6 +65,7 @@ import { WebsocketLobby } from "./types/WebsocketLobby";
 import { Game, GameStatus } from "./classes/Game";
 import { Player } from "./classes/Player";
 import { Color, PlayerColor } from "./types";
+import { Agent } from "./classes/Agent";
 
 function init_websocket_server() {
 	const socket_id_to_user = {} as Record<string, WebsocketUser>;
@@ -121,6 +123,22 @@ function init_websocket_server() {
 			
 			io.in(lobby.code).emit("updateLobby", { ...lobby });
 			emitLobbies();
+		}
+
+		const addBotToLobby = () => {
+			const lobby_id = player_id_to_lobby_id[user.id];
+			if (!lobby_id) return;
+
+			const lobby = lobby_id_to_lobby[lobby_id];
+			if (!lobby) return;
+
+			if ((lobby.host.id === user.id) && (lobby.players.length < lobby.maxPlayers)) {
+				const num_agents = lobby.players.filter(p => p.type === 'Agent').length;
+				const agent_user = { id: uuid(), username: `Bot ${num_agents + 1}`, type: 'Agent' } as WebsocketUser;
+				lobby.players.push(agent_user);
+				io.in(lobby.code).emit("updateLobby", lobby);
+				emitLobbies();
+			}
 		}
 
 		const createLobby = (callback: Function) => {
@@ -223,6 +241,11 @@ function init_websocket_server() {
 			callback(status);
 		}
 
+		const emit = (game_id: string) => {
+			emitGameToAllClients(game_id);
+			emitRespectivePlayers();
+		}
+
 		const startGame = () => {
 			// user is already in a game
 			if (player_id_to_game_id[user.id]) return;
@@ -232,13 +255,13 @@ function init_websocket_server() {
 
 			const players = lobby.players;
 			const playerColors = Object.values(PlayerColor);
-			const game_players = players.map((p, i) => new Player(p.id, p.username, playerColors[i]));
-			const game = new Game(game_players);
+			const game_players = players.map((p, i) => p.type === 'Agent' ? new Agent(p.id, p.username, playerColors[i]) : new Player(p.id, p.username, playerColors[i]));
+			const game = new Game(game_players, emit);
 
 			game_id_to_game[game.id] = game;
 
 			// map each player id to game
-			players.forEach(player => player_id_to_game_id[player.id] = game.id);
+			players.filter(p => p.type === 'Player').forEach(player => player_id_to_game_id[player.id] = game.id);
 			
 			// delete lobby
 			delete lobby_id_to_lobby[lobby.code];
@@ -359,6 +382,7 @@ function init_websocket_server() {
 		socket.on("emitLobbies", emitLobbies);
 		socket.on("joinLobby", joinLobby);
 		socket.on("leaveLobby", leaveLobby);
+		socket.on("lobbyAddBot", addBotToLobby);
 		socket.on("startGame", startGame);
 		socket.on("selectTicketCards", selectTicketCards);
 		socket.on("playerKeepTrainCarCard", playerKeepTrainCarCard);

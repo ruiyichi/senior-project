@@ -10,4 +10,6 @@ export type Player = {
   numTrainCars: number;
   proposedTicketCards: TicketCard[];
   color: PlayerColor;
+  longestContinuousPath: boolean;
+  type: 'Player' | 'Agent'
 };

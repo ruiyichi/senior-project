@@ -21,6 +21,7 @@ const verifyJWT = (req: any, res: Response, next: NextFunction) => {
 				if (err) return res.sendStatus(403); //invalid token
 				req.id = decoded.UserInfo.id;
 				req.username = decoded.UserInfo.username;
+				req.type = 'Player';
 				next();
 			}
 		);

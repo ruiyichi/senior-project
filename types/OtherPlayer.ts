@@ -10,4 +10,5 @@ export type OtherPlayer = {
   numTrainCars: number;
   color: PlayerColor;
   longestContinuousPath: boolean;
+  type: 'Player' | 'Agent';
 };
