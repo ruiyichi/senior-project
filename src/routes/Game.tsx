@@ -17,8 +17,8 @@ import AnimatedTrainCarCard from "../components/AnimatedTrainCarCard";
 
 const Game = () => {
   const { game } = useGame();
-  const { player, selectedCardColor, setSelectedCardColor } = usePlayer();
-  console.log(selectedCardColor)
+  const { player, selectedCard, setSelectedCard } = usePlayer();
+  console.log(selectedCard)
   const { socketRef } = useSocket();
 
   const activePlayer = { ...player, numTrainCarCards: player.trainCarCards.length, numTicketCards: player.ticketCards.length } as OtherPlayer;
@@ -61,7 +61,7 @@ const Game = () => {
           <div>
             {game.faceUpTrainCarCards.map(c => {
               const onClick = (game.activePlayerAction === ACTION.NO_ACTION || game.activePlayerAction === ACTION.DRAW_CARDS) ? () => {
-                setSelectedCardColor(undefined);
+                setSelectedCard(undefined);
                 socketRef.current?.emit("playerKeepTrainCarCard", c.id);
               } : undefined;
 
@@ -78,7 +78,7 @@ const Game = () => {
           <RouteLengthPoints />
         </div>
       </div>
-      { selectedCardColor && <AnimatedTrainCarCard color={selectedCardColor} /> }
+      { selectedCard && <AnimatedTrainCarCard color={selectedCard.color} key={selectedCard.id} /> }
     </>
   );
 }

@@ -25,7 +25,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 	const { updateLobbies } = useLobbies();
 	const { updateLobby } = useLobby();
 	const { updateGame, setFinalGame } = useGame();
-	const { updatePlayer, setSelectedCardColor } = usePlayer();
+	const { updatePlayer, setSelectedCard } = usePlayer();
 
   useEffect(() => {
 		if (user.accessToken) {
@@ -37,7 +37,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 			socketRef.current.on("updateFinalGame", payload => setFinalGame(payload as finalGame));
 			socketRef.current.on("playerKeepTrainCarCard", payload => {
 				if (payload) {
-					setSelectedCardColor((payload as TrainCarCard).color);
+					setSelectedCard(payload as TrainCarCard);
 					updatePlayer({ type: ActionTypes.ADD_TRAIN_CAR_CARD, payload: (payload as TrainCarCard) });
 				}
 			});

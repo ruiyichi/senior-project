@@ -1,14 +1,14 @@
 import { createContext, useContext, useReducer, useState } from "react";
 import { Player } from "../../types/Player";
-import { Color, PlayerColor, TrainCarCard } from "../../api/types";
+import { PlayerColor, TrainCarCard } from "../../api/types";
 
 const PlayerContext = createContext({} as PlayerContextValue);
 
 type PlayerContextValue = { 
 	player: Player,
 	updatePlayer: React.Dispatch<Action>,
-	selectedCardColor: Color | undefined,
-	setSelectedCardColor: React.Dispatch<React.SetStateAction<Color | undefined>>
+	selectedCard: TrainCarCard | undefined,
+	setSelectedCard: React.Dispatch<React.SetStateAction<TrainCarCard | undefined>>
 };
 
 const defaultPlayer = {
@@ -47,15 +47,16 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 
 		return player;
 	}
+
 	const [player, updatePlayer] = useReducer(PlayerReducer, defaultPlayer);
 
-	const [selectedCardColor, setSelectedCardColor] = useState<undefined | Color>(undefined);
+	const [selectedCard, setSelectedCard] = useState<undefined | TrainCarCard>(undefined);
 
 	const value: PlayerContextValue = { 
 		player,
 		updatePlayer,
-		selectedCardColor,
-		setSelectedCardColor
+		selectedCard,
+		setSelectedCard
 	};
 
 	return (
