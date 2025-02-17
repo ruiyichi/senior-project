@@ -50,6 +50,8 @@ export const TRAIN_CAR_CARD_TYPES = [
   }
 ];
 
+export const MAX_NUM_PLAYERS = 6;
+
 export const MAX_ITER = 99999999;
 
 export const NUM_STARTING_TRAIN_CAR_CARDS = 4;

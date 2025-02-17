@@ -56,7 +56,7 @@ export class Game {
     if (!replacements) {
       for (let i = this.faceUpTrainCarCards.length; i < NUM_FACE_UP_TRAIN_CAR_CARDS; i++) {
         const card = this.trainCarCardDeck.deal();
-        if (card === undefined) break;
+        if (card === null) break;
         this.faceUpTrainCarCards.push(card);
       }
     } else {
@@ -65,7 +65,7 @@ export class Game {
         if (replacement_idx === -1) continue;
 
         const card = this.trainCarCardDeck.deal();
-        if (card === undefined) break;
+        if (card === null) break;
         this.faceUpTrainCarCards[replacement_idx] = card;
       }
     }
@@ -261,15 +261,17 @@ export class Game {
   }
 
   keepTrainCarCard(player_id: string, card_id?: string | undefined) {
-    if (this.status === GameStatus.COMPLETE) return;
-    if (this.activePlayerId !== player_id) return;
+    let res: null | TrainCarCard = null;
+
+    if (this.status === GameStatus.COMPLETE) return res;
+    if (this.activePlayerId !== player_id) return res;
     
     const player = this.getPlayerFromId(player_id);
-    if (!player) return;
+    if (!player) return res;
 
-    if (this.activePlayerNumDrawnCards >= this.activePlayerMaxNumDrawnCards) return;
+    if (this.activePlayerNumDrawnCards >= this.activePlayerMaxNumDrawnCards) return res;
 
-    if (!(this.activePlayerAction === ACTION.NO_ACTION || this.activePlayerAction === ACTION.DRAW_CARDS)) return;
+    if (!(this.activePlayerAction === ACTION.NO_ACTION || this.activePlayerAction === ACTION.DRAW_CARDS)) return res;
 
     if (this.activePlayerAction === ACTION.NO_ACTION) {
       this.activePlayerAction = ACTION.DRAW_CARDS;
@@ -277,18 +279,20 @@ export class Game {
 
     if (card_id === undefined) {
       const card = this.trainCarCardDeck.deal();
-      if (!card) return;
+      res = card;
+      if (!card) return res;
 
       player.trainCarCards.push(card);
     } else {
       const card = this.faceUpTrainCarCards.find(c => c.id === card_id);
-      if (!card) return;
+      if (!card) return res;
 
       if (card.color === Color.Wild) {
-        if (this.activePlayerNumDrawnCards > 0) return;
+        if (this.activePlayerNumDrawnCards > 0) return res;
         this.activePlayerMaxNumDrawnCards = 1;
       }
 
+      res = card;
       player.trainCarCards.push(card);
       this.updateFaceUpTrainCarCards([card]);
     }
@@ -297,6 +301,8 @@ export class Game {
     if (this.activePlayerNumDrawnCards >= this.activePlayerMaxNumDrawnCards) {
       this.nextTurn();
     }
+
+    return res;
   }
 
   actionTicketCards(player_id: string) {

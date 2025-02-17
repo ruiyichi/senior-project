@@ -1,5 +1,5 @@
 import { createContext, useContext, useReducer } from "react";
-import { User } from "../../types/User.ts"
+import { User } from "../../types/User.ts";
 
 type UserAction = { type: 'update', payload: User } | { type: 'clear' };
 

@@ -8,8 +8,9 @@ import { useLobby } from "./LobbyContext";
 import { useGame } from "./GameContext";
 import { Game } from "types/Game";
 import { Player } from "types/Player";
-import { usePlayer } from "./PlayerContext";
+import { ActionTypes, usePlayer } from "./PlayerContext";
 import { Game as finalGame } from "../../api/classes/Game";
+import { TrainCarCard } from "../../api/types";
 
 type SocketContextValue = {
   socketRef: React.MutableRefObject<Socket | undefined>,
@@ -24,7 +25,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 	const { updateLobbies } = useLobbies();
 	const { updateLobby } = useLobby();
 	const { updateGame, setFinalGame } = useGame();
-	const { updatePlayer } = usePlayer();
+	const { updatePlayer, setSelectedCardColor } = usePlayer();
 
   useEffect(() => {
 		if (user.accessToken) {
@@ -32,8 +33,14 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 			socketRef.current.on("updateLobbies", payload => updateLobbies(payload as WebsocketLobby[]));
 			socketRef.current.on("updateLobby", payload => updateLobby(payload as WebsocketLobby));
 			socketRef.current.on("updateGame", payload => updateGame(payload as Game));
-			socketRef.current.on("updatePlayer", payload => updatePlayer(payload as Player));
+			socketRef.current.on("updatePlayer", payload => updatePlayer({ type: ActionTypes.UPDATE, payload: payload as Player }));
 			socketRef.current.on("updateFinalGame", payload => setFinalGame(payload as finalGame));
+			socketRef.current.on("playerKeepTrainCarCard", payload => {
+				if (payload) {
+					setSelectedCardColor((payload as TrainCarCard).color);
+					updatePlayer({ type: ActionTypes.ADD_TRAIN_CAR_CARD, payload: (payload as TrainCarCard) });
+				}
+			});
 		}
 
 		return () => {

@@ -8,6 +8,7 @@ type TrainCarCardDeckPlaceholderProps = {
   orientation?: "vertical" | "horizontal",
   onClick?: React.MouseEventHandler<HTMLDivElement>
 }
+
 const TrainCarCardDeckPlaceholder = ({ size=7, orientation="vertical", onClick }: TrainCarCardDeckPlaceholderProps) => {
   const { game } = useGame();
 

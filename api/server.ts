@@ -59,7 +59,7 @@ function init_server() {
 import { Socket, Server } from "socket.io";
 import jwt, { Secret } from 'jsonwebtoken';
 import { createLobbyCode } from "./utils";
-import { MAX_ITER } from "./constants";
+import { MAX_ITER, MAX_NUM_PLAYERS } from "./constants";
 import { WebsocketUser } from "./types/WebsocketUser";
 import { WebsocketLobby } from "./types/WebsocketLobby";
 import { Game, GameStatus } from "./classes/Game";
@@ -158,7 +158,7 @@ function init_websocket_server() {
 				code: lobbyCode,
 				players: [user],
 				createdAt: Date.now(),
-				maxPlayers: 6
+				maxPlayers: MAX_NUM_PLAYERS
 			}
 
 			lobby_id_to_lobby[lobby.code] = lobby;
@@ -321,10 +321,11 @@ function init_websocket_server() {
 			const game = getGame();
 			if (!game) return;
 
-			game.keepTrainCarCard(user.id, card_id);
+			const res = game.keepTrainCarCard(user.id, card_id);
 
 			emitGameToAllClients(game.id);
-			emitRespectivePlayers();
+			
+			socket.emit("playerKeepTrainCarCard", res);
 
 			if (game.status === GameStatus.COMPLETE) {
 				onGameEnd();

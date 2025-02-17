@@ -19,9 +19,10 @@ export class Deck<T> {
   }
 
   deal() {
-    let card_to_return: undefined | T = undefined;
+    let card_to_return: null | T = null;
+    
     if (this.cards.length > 0) {
-      card_to_return = this.cards.pop();
+      card_to_return = this.cards.pop() ?? null;
     }
 
     if (this.cards.length === 0 && this.discards.length > 0) {
@@ -29,7 +30,7 @@ export class Deck<T> {
       this.shuffle();
       this.discards = [];
       if (!card_to_return) {
-        return this.cards.pop()
+        return this.cards.pop() ?? null
       }
     }
 

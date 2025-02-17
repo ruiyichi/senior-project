@@ -21,13 +21,13 @@ export const LobbiesProvider = ({ children }: { children: React.ReactNode }) => 
 			default:
 				return lobbies;
 		}
-	}
+	};
 
 	const [lobbies, dispatchLobbies] = useReducer(lobbiesReducer, [] as WebsocketLobby[]);
 
 	const updateLobbies = (payload: WebsocketLobby[]) => {
 		dispatchLobbies({ type: 'update', payload });
-	}
+	};
 
   const value: LobbiesContextValue = {
     lobbies,

@@ -6,6 +6,7 @@ type TicketCardDeckPlaceholderProps = {
   size?: number,
   onClick?: React.MouseEventHandler<HTMLDivElement>
 };
+
 const TicketCardDeckPlaceholder = ({ size=7, onClick }: TicketCardDeckPlaceholderProps) => {
   const { game } = useGame();
 

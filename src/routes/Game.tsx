@@ -13,10 +13,12 @@ import { OtherPlayer } from "types/OtherPlayer";
 import RouteLengthPoints from "../components/RouteLengthPoints";
 import { GameStatus } from "../../api/classes/Game";
 import Scoreboard from "../components/Scoreboard";
+import AnimatedTrainCarCard from "../components/AnimatedTrainCarCard";
 
 const Game = () => {
   const { game } = useGame();
-  const { player } = usePlayer();
+  const { player, selectedCardColor, setSelectedCardColor } = usePlayer();
+  console.log(selectedCardColor)
   const { socketRef } = useSocket();
 
   const activePlayer = { ...player, numTrainCarCards: player.trainCarCards.length, numTicketCards: player.ticketCards.length } as OtherPlayer;
@@ -59,6 +61,7 @@ const Game = () => {
           <div>
             {game.faceUpTrainCarCards.map(c => {
               const onClick = (game.activePlayerAction === ACTION.NO_ACTION || game.activePlayerAction === ACTION.DRAW_CARDS) ? () => {
+                setSelectedCardColor(undefined);
                 socketRef.current?.emit("playerKeepTrainCarCard", c.id);
               } : undefined;
 
@@ -75,6 +78,7 @@ const Game = () => {
           <RouteLengthPoints />
         </div>
       </div>
+      { selectedCardColor && <AnimatedTrainCarCard color={selectedCardColor} /> }
     </>
   );
 }

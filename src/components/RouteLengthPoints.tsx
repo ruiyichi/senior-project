@@ -2,7 +2,7 @@ import { ROUTE_LENGTH_TO_POINTS } from "../../api/constants";
 
 const RouteLengthPoints = () => {
   return (
-    <div style={{ fontSize: '1vw', display: 'flex', flexDirection: 'row', backgroundColor: '#b58d48', textAlign: 'center', alignSelf: 'flex-end', userSelect: 'none', marginTop: 'auto' }}>
+    <div style={{ fontSize: '1vw', display: 'flex', flexDirection: 'row', backgroundColor: '#b58d48', textAlign: 'center', alignSelf: 'flex-end', userSelect: 'none', marginTop: 'auto', border: '0.2vw solid black' }}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div>
           Route Length
