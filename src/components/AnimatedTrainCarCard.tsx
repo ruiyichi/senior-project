@@ -1,14 +1,17 @@
-import { motion } from "framer-motion";
+import { motion, MotionProps } from "framer-motion";
 import TrainCarCard from "./TrainCarCard";
 import { Color } from "../../api/types";
+import React from "react";
 
-const AnimatedTrainCarCard = ({ color }: { color: Color }) => {
+interface AnimatedTrainCarCardProps extends MotionProps {
+  color: Color,
+}
+
+const AnimatedTrainCarCard: React.FC<AnimatedTrainCarCardProps> = ({ color, ...motionProps }) => {
   return (
     <motion.div 
       style={{ position: 'absolute', zIndex: 10 }}
-      initial={{ left: "80vw", top: "0vh", opacity: 1 }}
-      animate={{ left: "50vw", top: "80vh", opacity: 0 }}
-      transition={{ duration: 1.5, ease: "easeInOut" }}
+      {...motionProps}
     >
       <TrainCarCard 
         color={color} 

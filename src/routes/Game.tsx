@@ -16,7 +16,7 @@ import Scoreboard from "../components/Scoreboard";
 import AnimatedTrainCarCard from "../components/AnimatedTrainCarCard";
 
 const Game = () => {
-  const { game } = useGame();
+  const { game, otherPlayerSelectedCard } = useGame();
   const { player, selectedCard, setSelectedCard } = usePlayer();
   console.log(selectedCard)
   const { socketRef } = useSocket();
@@ -52,7 +52,7 @@ const Game = () => {
             />
             <TrainCarCardDeckPlaceholder 
               orientation="horizontal" 
-              onClick={(game.activePlayerAction === ACTION.NO_ACTION || game.activePlayerAction === ACTION.DRAW_CARDS) ? () => {
+              onClick={game.activePlayerId === player.id && (game.activePlayerAction === ACTION.NO_ACTION || game.activePlayerAction === ACTION.DRAW_CARDS) ? () => {
                 socketRef.current?.emit("playerKeepTrainCarCard");
               } : undefined}
             />
@@ -78,7 +78,24 @@ const Game = () => {
           <RouteLengthPoints />
         </div>
       </div>
-      { selectedCard && <AnimatedTrainCarCard color={selectedCard.color} key={selectedCard.id} /> }
+      { selectedCard && 
+        <AnimatedTrainCarCard 
+          color={selectedCard.color} 
+          key={selectedCard.id} 
+          initial={{ left: "80vw", top: "0vh", opacity: 1 }}
+          animate={{ left: "50vw", top: "80vh", opacity: 0 }}
+          transition={{ duration: 1.5, ease: "easeInOut" }}
+        /> 
+      }
+      { otherPlayerSelectedCard?.card && 
+        <AnimatedTrainCarCard 
+          color={otherPlayerSelectedCard.card.color} 
+          key={otherPlayerSelectedCard.card.id} 
+          initial={{ left: "80vw", top: "10vh", opacity: 1 }}
+          animate={{ left: "0vw", top: "10vh", opacity: 0 }}
+          transition={{ duration: 1.5, ease: "easeInOut" }}
+        /> 
+      }
     </>
   );
 }

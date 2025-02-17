@@ -431,7 +431,7 @@ export const TrainCarCardColorToImage = {
   [Color.Yellow]: YellowTrainCarCard,
   [Color.Green]: GreenTrainCarCard,
   [Color.Blue]: BlueTrainCarCard,
-  [Color.Orange]: OrangeTrainCarCard
+  [Color.Orange]: OrangeTrainCarCard,
 };
 
 export const TrainCarCardColorToImageVertical = {

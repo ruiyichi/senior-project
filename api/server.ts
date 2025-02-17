@@ -324,7 +324,17 @@ function init_websocket_server() {
 			const res = game.keepTrainCarCard(user.id, card_id);
 
 			emitGameToAllClients(game.id);
-			
+
+			const sockets_in_game = getSocketIdsInRoom(game.id);
+			sockets_in_game?.forEach(socket_id => {
+				if (socket_id !== socket.id) {
+					getSocketByID(socket_id)?.emit("otherPlayerKeepTrainCarCard", { 
+						user_id: socket_id_to_user[socket_id].id, 
+						card: card_id === undefined ? { id: uuid(), color: null } : res
+					});
+				}
+			});
+
 			socket.emit("playerKeepTrainCarCard", res);
 
 			if (game.status === GameStatus.COMPLETE) {

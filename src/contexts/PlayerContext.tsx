@@ -28,7 +28,7 @@ const defaultPlayer = {
 export enum ActionTypes {
 	UPDATE,
 	ADD_TRAIN_CAR_CARD
-}
+};
 
 type Action = 
 	| { type: ActionTypes.UPDATE, payload: Player }
@@ -41,6 +41,7 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
 		if (action.type === ActionTypes.UPDATE) {
 			return { ...player, ...action.payload };
 		}
+
 		if (action.type === ActionTypes.ADD_TRAIN_CAR_CARD) {
 			return { ...player, trainCarCards: [...player.trainCarCards, action.payload]};
 		}

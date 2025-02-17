@@ -1,6 +1,8 @@
 import { Color } from "../../api/types";
 import { TrainCarCardColorToImage, TrainCarCardColorToImageVertical } from "../constants";
 import { AnimationProps, motion } from "framer-motion";
+import FaceDownTrainCardHorizontal from "../assets/face_down_train_card_horizontal.jpg";
+import FaceDownTrainCardVertical from "../assets/face_down_train_card_vertical.jpg";
 
 type TrainCarCardProps = {
   color: Color, 
@@ -12,7 +14,12 @@ type TrainCarCardProps = {
 };
 
 const TrainCarCard = ({ color, size=7, orientation='horizontal', count, onClick, animate } : TrainCarCardProps) => {
-  const img_src = orientation === 'horizontal' ? TrainCarCardColorToImage[color] : TrainCarCardColorToImageVertical[color];
+  let img_src: string;
+  if (!color) {
+    img_src = orientation === 'horizontal' ? FaceDownTrainCardHorizontal : FaceDownTrainCardVertical;
+  } else {
+    img_src = orientation === 'horizontal' ? TrainCarCardColorToImage[color] : TrainCarCardColorToImageVertical[color];
+  }
 
   return (
     <motion.div 

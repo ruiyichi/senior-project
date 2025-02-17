@@ -1,4 +1,4 @@
-import { PlayerColor, Route } from "../api/types";
+import { PlayerColor, Route, TrainCarCard } from "../api/types";
 
 export type OtherPlayer = {
   id: string;
@@ -12,3 +12,8 @@ export type OtherPlayer = {
   longestContinuousPath: boolean;
   type: 'Player' | 'Agent';
 };
+
+export type OtherPlayerKeptCard = { 
+  user_id: string;
+  card: TrainCarCard | undefined;
+}

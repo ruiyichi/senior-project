@@ -3,14 +3,11 @@ import { io, Socket } from "socket.io-client";
 import { useUser } from "./UserContext";
 import { SOCKET_SERVER_URI } from "../constants";
 import { useLobbies } from "./LobbiesContext";
-import { WebsocketLobby } from "../../api/types/WebsocketLobby";
 import { useLobby } from "./LobbyContext";
-import { useGame } from "./GameContext";
-import { Game } from "types/Game";
-import { Player } from "types/Player";
-import { ActionTypes, usePlayer } from "./PlayerContext";
-import { Game as finalGame } from "../../api/classes/Game";
+import { useGame, ActionTypes as GameActionTypes } from "./GameContext";
+import { ActionTypes as PlayerActionTypes, usePlayer } from "./PlayerContext";
 import { TrainCarCard } from "../../api/types";
+import { OtherPlayerKeptCard } from "types/OtherPlayer";
 
 type SocketContextValue = {
   socketRef: React.MutableRefObject<Socket | undefined>,
@@ -24,21 +21,26 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useUser();
 	const { updateLobbies } = useLobbies();
 	const { updateLobby } = useLobby();
-	const { updateGame, setFinalGame } = useGame();
+	const { updateGame, setFinalGame, setOtherPlayerSelectedCard } = useGame();
 	const { updatePlayer, setSelectedCard } = usePlayer();
 
   useEffect(() => {
 		if (user.accessToken) {
 			socketRef.current = io(SOCKET_SERVER_URI, { query: { token: user.accessToken }});
-			socketRef.current.on("updateLobbies", payload => updateLobbies(payload as WebsocketLobby[]));
-			socketRef.current.on("updateLobby", payload => updateLobby(payload as WebsocketLobby));
-			socketRef.current.on("updateGame", payload => updateGame(payload as Game));
-			socketRef.current.on("updatePlayer", payload => updatePlayer({ type: ActionTypes.UPDATE, payload: payload as Player }));
-			socketRef.current.on("updateFinalGame", payload => setFinalGame(payload as finalGame));
+			socketRef.current.on("updateLobbies", payload => updateLobbies(payload));
+			socketRef.current.on("updateLobby", payload => updateLobby(payload));
+			socketRef.current.on("updateGame", payload => updateGame({ type: GameActionTypes.UPDATE, payload }));
+			socketRef.current.on("updatePlayer", payload => updatePlayer({ type: PlayerActionTypes.UPDATE, payload }));
+			socketRef.current.on("updateFinalGame", payload => setFinalGame(payload));
 			socketRef.current.on("playerKeepTrainCarCard", payload => {
 				if (payload) {
 					setSelectedCard(payload as TrainCarCard);
-					updatePlayer({ type: ActionTypes.ADD_TRAIN_CAR_CARD, payload: (payload as TrainCarCard) });
+					updatePlayer({ type: PlayerActionTypes.ADD_TRAIN_CAR_CARD, payload });
+				}
+			});
+			socketRef.current.on("otherPlayerKeepTrainCarCard", (payload: OtherPlayerKeptCard) => {
+				if (payload.card) {
+					setOtherPlayerSelectedCard(payload);
 				}
 			});
 		}

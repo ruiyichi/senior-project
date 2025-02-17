@@ -2,20 +2,23 @@ import { createContext, useContext, useReducer, useState } from "react";
 import { Game } from "../../types/Game";
 import { GameStatus } from "../../api/classes/Game";
 import { ACTION } from "../../api/constants";
-import { Color, Route } from "api/types";
+import { Color, Route } from "../../api/types";
 import { Game as finalGame } from "../../api/classes/Game";
+import { OtherPlayerKeptCard } from "../../types/OtherPlayer";
 
 const GameContext = createContext({} as GameContextValue);
 
 type GameContextValue = { 
 	game: Game,
-	updateGame: React.Dispatch<Game>,
+	updateGame: React.Dispatch<Action>,
 	finalGame: finalGame | undefined,
 	setFinalGame: React.Dispatch<React.SetStateAction<finalGame | undefined>>,
 	selectedRoute: Route | undefined,
 	setSelectedRoute: React.Dispatch<React.SetStateAction<Route | undefined>>,
 	selectedCardColor: Color | undefined,
 	setSelectedCardColor: React.Dispatch<React.SetStateAction<Color | undefined>>,
+	otherPlayerSelectedCard : OtherPlayerKeptCard | undefined,
+	setOtherPlayerSelectedCard: React.Dispatch<React.SetStateAction<OtherPlayerKeptCard | undefined>>
 };
 
 const defaultGame = {
@@ -32,13 +35,26 @@ const defaultGame = {
 	status: GameStatus.PENDING,
 	activePlayerAction: ACTION.NO_ACTION,
 	standings: []
+} as Game;
+
+export enum ActionTypes {
+	UPDATE,
 };
 
+type Action = 
+	| { type: ActionTypes.UPDATE, payload: Game }
+
 export const GameProvider = ({ children }: { children: React.ReactNode }) => {
-	const gameReducer = (game: Game, payload: Game) => {
-		console.log(payload);
-		return { ...game, ...payload };
+	const gameReducer = (game: Game, action: Action) => {
+		console.log(action);
+
+		if (action.type === ActionTypes.UPDATE) {
+			return { ...game, ...action.payload };
+		}
+
+		return game;
 	}
+
 	const [game, updateGame] = useReducer(gameReducer, defaultGame);
 
 	const [finalGame, setFinalGame] = useState<finalGame | undefined>(undefined);
@@ -46,6 +62,8 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 	const [selectedRoute, setSelectedRoute] = useState<Route | undefined>(undefined);
 
 	const [selectedCardColor, setSelectedCardColor] = useState<Color | undefined>(undefined);
+
+	const [otherPlayerSelectedCard, setOtherPlayerSelectedCard] = useState<OtherPlayerKeptCard | undefined>(undefined);
 
 	const value: GameContextValue = { 
 		game,
@@ -55,7 +73,9 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 		selectedCardColor,
 		setSelectedCardColor,
 		finalGame,
-		setFinalGame
+		setFinalGame,
+		otherPlayerSelectedCard,
+		setOtherPlayerSelectedCard
 	};
 
 	return (
