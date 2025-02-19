@@ -4,7 +4,7 @@ import { MouseEventHandler } from "react";
 import { SERVER_URI } from "../constants";
 
 interface UserImageProps {
-  user: { id: string, username: string }, 
+  user: { id: string, username: string, type: string }, 
   onClick?: MouseEventHandler<HTMLImageElement>, 
   size?: number, 
   label?: string, 
@@ -27,7 +27,7 @@ export const UserImage = ({ user, onClick, size=50, label, orientation="vertical
 					pointer: onClick !== undefined
 				})}
 				draggable={false}
-				src={!user.id ? '' : `${SERVER_URI}/images/profiles/${user.id}`} 
+				src={!user.id || user.type === 'Agent' ? `${SERVER_URI}/images/profilePictures/bot.jpg` : `${SERVER_URI}/images/profiles/${user.id}`} 
 				alt={user.id}
 				onClick={onClick}
 				width={size}

@@ -30,8 +30,9 @@ export class Game {
   lastRoundPlayerId: null | string;
   standings: string[];
   emit: Function;
+  emitOnOtherPlayerKeepTrainCarCard: Function
   
-  constructor(players: Player[], emit: Function) {
+  constructor(players: Player[], emit: Function, emitOnOtherPlayerKeepTrainCarCard: Function) {
     this.id = uuid();
     this.trainCarCardDeck = this.initializeTrainCarCardDeck();
     this.ticketCardDeck = this.initializeTicketCardDeck();
@@ -49,6 +50,7 @@ export class Game {
     this.lastRoundPlayerId = null;
     this.standings = [];
     this.emit = emit;
+    this.emitOnOtherPlayerKeepTrainCarCard = emitOnOtherPlayerKeepTrainCarCard;
   }
 
   updateFaceUpTrainCarCards(replacements?: TrainCarCard[]) {
@@ -83,7 +85,7 @@ export class Game {
     const all_cards = TRAIN_CAR_CARD_TYPES.map(type => {
       const cards_of_type = [] as TrainCarCard[];
       for (let i = 0; i < type.numCards; i++) {
-        cards_of_type.push({ id: uuid(), type: type.type, color: type.color });
+        cards_of_type.push({ id: uuid(), color: type.color });
       }
       return cards_of_type;
     }).flat();
@@ -122,7 +124,7 @@ export class Game {
     return ROUTE_LENGTH_TO_POINTS[routeLength];
   }
 
-  async claimRoute(route_id: string, wild_route_color?: Color) {
+  claimRoute(route_id: string, wild_route_color?: Color) {
     if (this.status === GameStatus.COMPLETE) return;
     const player = this.getPlayerFromId(this.activePlayerId);
 
@@ -188,7 +190,8 @@ export class Game {
         duplicate_route.disabled = true;
       }
     }
-    await this.nextTurn();
+    
+    this.nextTurn();
 
     if (this.lastRoundPlayerId === null && player.numTrainCars <= 2) {
       this.lastRoundPlayerId = player.id;
@@ -230,7 +233,7 @@ export class Game {
     return this.players.some(p => p.ticketCards.length === 0);
   }
 
-  async keepTicketCards(player_id: string, ticket_card_ids: string[]) {
+  keepTicketCards(player_id: string, ticket_card_ids: string[]) {
     if (this.status === GameStatus.COMPLETE) return;
     
     const player = this.getPlayerFromId(player_id);
@@ -262,8 +265,6 @@ export class Game {
     if (!is_initial_ticket_selection) {
       this.nextTurn();
     }
-
-    this.performBotActions();
   }
 
   keepTrainCarCard(player_id: string, card_id?: string | undefined) {
@@ -322,7 +323,7 @@ export class Game {
 
   startGame() {
     if (this.status === GameStatus.COMPLETE) return;
-    
+
     this.status = GameStatus.IN_PROGRESS;
     this.dealInitialTrainCarCards();
     this.updateFaceUpTrainCarCards();

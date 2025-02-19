@@ -29,7 +29,6 @@ export type TicketCard = {
 export type TrainCarCard = {
   id: string;
   color: Color;
-  type: string;
 };
 
 export type Route = {

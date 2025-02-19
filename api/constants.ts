@@ -4,47 +4,38 @@ const DEFAULT_NUM_TRAIN_CAR_CARDS = 12;
 
 export const TRAIN_CAR_CARD_TYPES = [
   {
-    type: "Box",
     color: Color.Pink,
     numCards: DEFAULT_NUM_TRAIN_CAR_CARDS
   },
   {
-    type: "Passenger",
     color: Color.White,
     numCards: DEFAULT_NUM_TRAIN_CAR_CARDS
   },
   {
-    type: "Tanker",
     color: Color.Blue,
     numCards: DEFAULT_NUM_TRAIN_CAR_CARDS
   },
   {
-    type: "Reefer",
     color: Color.Yellow,
     numCards: DEFAULT_NUM_TRAIN_CAR_CARDS
   },
   {
-    type: "Freight",
     color: Color.Orange,
     numCards: DEFAULT_NUM_TRAIN_CAR_CARDS
   },
   {
-    type: "Hopper",
     color: Color.Black,
     numCards: DEFAULT_NUM_TRAIN_CAR_CARDS
   },
   {
-    type: "Coal",
     color: Color.Red,
     numCards: DEFAULT_NUM_TRAIN_CAR_CARDS
   },
   {
-    type: "Caboose",
     color: Color.Green,
     numCards: DEFAULT_NUM_TRAIN_CAR_CARDS
   },
   {
-    type: "Locomotive",
     color: Color.Wild,
     numCards: 14
   }

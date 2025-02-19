@@ -64,7 +64,7 @@ import { WebsocketUser } from "./types/WebsocketUser";
 import { WebsocketLobby } from "./types/WebsocketLobby";
 import { Game, GameStatus } from "./classes/Game";
 import { Player } from "./classes/Player";
-import { Color, PlayerColor } from "./types";
+import { Color, PlayerColor, TrainCarCard } from "./types";
 import { Agent } from "./classes/Agent";
 
 function init_websocket_server() {
@@ -256,7 +256,7 @@ function init_websocket_server() {
 			const players = lobby.players;
 			const playerColors = Object.values(PlayerColor);
 			const game_players = players.map((p, i) => p.type === 'Agent' ? new Agent(p.id, p.username, playerColors[i]) : new Player(p.id, p.username, playerColors[i]));
-			const game = new Game(game_players, emit);
+			const game = new Game(game_players, emit, emitOnOtherPlayerKeepTrainCarCard);
 
 			game_id_to_game[game.id] = game;
 
@@ -305,7 +305,7 @@ function init_websocket_server() {
 			const game = getGame();
 			if (!game) return;
 
-			await game.keepTicketCards(user.id, ticketCardIds);
+			game.keepTicketCards(user.id, ticketCardIds);
 			emitGameToAllClients(game.id);
 			emitRespectivePlayers();
 		}
@@ -321,25 +321,29 @@ function init_websocket_server() {
 			const game = getGame();
 			if (!game) return;
 
-			const res = game.keepTrainCarCard(user.id, card_id);
+			const kept_card = game.keepTrainCarCard(user.id, card_id);
 
 			emitGameToAllClients(game.id);
 
-			const sockets_in_game = getSocketIdsInRoom(game.id);
-			sockets_in_game?.forEach(socket_id => {
-				if (socket_id !== socket.id) {
-					getSocketByID(socket_id)?.emit("otherPlayerKeepTrainCarCard", { 
-						user_id: socket_id_to_user[socket_id].id, 
-						card: card_id === undefined ? { id: uuid(), color: null } : res
-					});
-				}
-			});
+			emitOnOtherPlayerKeepTrainCarCard(game.id, socket_id_to_user[socket.id].id, card_id, kept_card);
 
-			socket.emit("playerKeepTrainCarCard", res);
+			socket.emit("playerKeepTrainCarCard", kept_card);
 
 			if (game.status === GameStatus.COMPLETE) {
 				onGameEnd();
 			}
+		}
+
+		const emitOnOtherPlayerKeepTrainCarCard = (game_id: string, user_id: string, selected_card_id: string | undefined, kept_card: TrainCarCard | null) => {
+			const sockets_in_game = getSocketIdsInRoom(game_id);
+			sockets_in_game?.forEach(socket_id => {
+				if (user_id === socket_id_to_user[socket_id]?.id) return;
+
+				getSocketByID(socket_id)?.emit("otherPlayerKeepTrainCarCard", { 
+					user_id,
+					card: selected_card_id === undefined ? { id: uuid(), color: null } : kept_card
+				});
+			});
 		}
 
 		const playerActionTicketCard = () => {
@@ -359,7 +363,7 @@ function init_websocket_server() {
 			const game = getGame();
 			if (!game) return;
 
-			await game.claimRoute(route_id, color);
+			game.claimRoute(route_id, color);
 			emitGameToAllClients(game.id);
 			emitRespectivePlayers();
 
@@ -371,7 +375,8 @@ function init_websocket_server() {
 		const playerPass = async () => {
 			const game = getGame();
 			if (!game) return;
-			await game.nextTurn();
+			
+			game.nextTurn();
 			emitGameToAllClients(game.id);
 			emitRespectivePlayers();
 

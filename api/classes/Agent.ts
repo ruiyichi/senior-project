@@ -45,11 +45,14 @@ export class Agent extends Player {
   }
 
   async performTurn(game: Game) {
-    await this.wait(5000);
-    game.keepTrainCarCard(this.id);
+    await this.wait(3000);
+    let kept_card = game.keepTrainCarCard(this.id);
     game.emit(game.id);
-    await this.wait(5000);
-    game.keepTrainCarCard(this.id);
+    game.emitOnOtherPlayerKeepTrainCarCard(game.id, this.id, undefined, kept_card);
+    
+    await this.wait(3000);
+    kept_card = game.keepTrainCarCard(this.id);
     game.emit(game.id);
+    game.emitOnOtherPlayerKeepTrainCarCard(game.id, this.id, undefined, kept_card);
   }
 }
