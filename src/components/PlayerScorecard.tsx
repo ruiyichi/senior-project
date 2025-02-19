@@ -20,7 +20,7 @@ const PlayerScorecard = ({ player }: { player: OtherPlayer }) => {
             'user-image': true,
           })}
           draggable={false}
-          src={player.type === 'Agent' ? `${SERVER_URI}/images/profilePictures/bot.jpg` : (!player.id ? '' : `${SERVER_URI}/images/profiles/${player.id}?${Date.now()}`)} 
+          src={player.type === 'Agent' ? `${SERVER_URI}/images/profilePictures/bot.jpg` : (!player.id ? '' : `${SERVER_URI}/images/profiles/${player.id}`)} 
           alt={player.id}
           width={'50vw'}
         />

@@ -33,12 +33,14 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 			socketRef.current.on("updatePlayer", payload => updatePlayer({ type: PlayerActionTypes.UPDATE, payload }));
 			socketRef.current.on("updateFinalGame", payload => setFinalGame(payload));
 			socketRef.current.on("playerKeepTrainCarCard", payload => {
+				console.log('playerKeepTrainCarCard', payload)
 				if (payload) {
 					setSelectedCard(payload as TrainCarCard);
 					updatePlayer({ type: PlayerActionTypes.ADD_TRAIN_CAR_CARD, payload });
 				}
 			});
 			socketRef.current.on("otherPlayerKeepTrainCarCard", (payload: OtherPlayerKeptCard) => {
+				console.log('otherPlayerKeepTrainCarCard', payload)
 				if (payload.card) {
 					setOtherPlayerSelectedCard(payload);
 				}

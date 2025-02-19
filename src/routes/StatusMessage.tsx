@@ -49,12 +49,20 @@ const StatusMessage = () => {
     return player.trainCarCards.filter(c => c.color === selectedRoute.color || c.color === Color.Wild).length >= selectedRoute.path.length ? (player.numTrainCars >= selectedRoute.path.length ? 3 : 4) : 1;
   }
 
+  const isInitialTicketSelection = () => {
+    return game.players.some(p => p.numTicketCards === 0);
+  }
+
   const getStatusMessage = () => {
     if (game.status === GameStatus.COMPLETE) {
       return 'Game completed.';
+
     }
     if (player.proposedTicketCards.length > 0) {
-      return 'Select ticket cards';
+      if (isInitialTicketSelection()) {
+        return 'Select at least two ticket cards';
+      }
+      return 'Select at least one ticket card';
     } else {
       const activePlayer = game.players.find(p => p.id === game.activePlayerId);
       

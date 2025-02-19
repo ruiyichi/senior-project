@@ -122,7 +122,7 @@ export class Game {
     return ROUTE_LENGTH_TO_POINTS[routeLength];
   }
 
-  claimRoute(route_id: string, wild_route_color?: Color) {
+  async claimRoute(route_id: string, wild_route_color?: Color) {
     if (this.status === GameStatus.COMPLETE) return;
     const player = this.getPlayerFromId(this.activePlayerId);
 
@@ -188,7 +188,7 @@ export class Game {
         duplicate_route.disabled = true;
       }
     }
-    this.nextTurn();
+    await this.nextTurn();
 
     if (this.lastRoundPlayerId === null && player.numTrainCars <= 2) {
       this.lastRoundPlayerId = player.id;
@@ -211,6 +211,7 @@ export class Game {
 
   proposeTicketCards(player_id: string) {
     if (this.status === GameStatus.COMPLETE) return;
+
     const player = this.getPlayerFromId(player_id);
     if (!player) return;
 
@@ -225,13 +226,18 @@ export class Game {
     player.proposedTicketCards = ticket_cards;
   }
 
-  keepTicketCards(player_id: string, ticket_card_ids: string[]) {
+  isInitialTicketSelection() {
+    return this.players.some(p => p.ticketCards.length === 0);
+  }
+
+  async keepTicketCards(player_id: string, ticket_card_ids: string[]) {
     if (this.status === GameStatus.COMPLETE) return;
+    
     const player = this.getPlayerFromId(player_id);
     if (!player) return;
 
-    const is_active_player_action = this.activePlayerAction === ACTION.DRAW_TICKETS && player_id === this.activePlayerId;
-    const min_num_cards = is_active_player_action ? 1 : 2;
+    const is_initial_ticket_selection = this.isInitialTicketSelection();
+    const min_num_cards_to_keep = is_initial_ticket_selection ? 2 : 1;
 
     const new_ticket_cards = [] as TicketCard[];
 
@@ -242,7 +248,7 @@ export class Game {
       }
     }
 
-    if (new_ticket_cards.length < min_num_cards) return;
+    if (new_ticket_cards.length < min_num_cards_to_keep) return;
     
     new_ticket_cards.forEach(card => player.ticketCards.push(card));
     for (const card of player.proposedTicketCards) {
@@ -253,7 +259,7 @@ export class Game {
 
     player.proposedTicketCards = [];
 
-    if (is_active_player_action) {
+    if (!is_initial_ticket_selection) {
       this.nextTurn();
     }
 
@@ -316,6 +322,7 @@ export class Game {
 
   startGame() {
     if (this.status === GameStatus.COMPLETE) return;
+    
     this.status = GameStatus.IN_PROGRESS;
     this.dealInitialTrainCarCards();
     this.updateFaceUpTrainCarCards();
@@ -392,7 +399,7 @@ export class Game {
     this.status = GameStatus.COMPLETE;
   }
 
-  nextTurn() {
+  async nextTurn() {
     if (this.status === GameStatus.COMPLETE) return;
     if (this.lastRoundPlayerId === this.activePlayerId) {
       this.gameEnd();
@@ -406,17 +413,16 @@ export class Game {
     const currentPlayerIdIdx = this.players.findIndex(p => p.id === this.activePlayerId);
     this.activePlayerId = this.players[(currentPlayerIdIdx + 1) % this.players.length].id;
 
-    this.performBotActions();
+    await this.performBotActions();
   }
 
-  performBotActions() {
+  async performBotActions() {
     const player = this.getPlayerFromId(this.activePlayerId);
     if (!player) return;
 
     if (player.type === 'Agent') {
       console.log('perform turn');
-      (player as Agent).performTurn(this);
-      this.emit();
+      await (player as Agent).performTurn(this);
     }
   }
 }

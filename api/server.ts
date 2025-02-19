@@ -301,11 +301,11 @@ function init_websocket_server() {
 			}
 		}
 
-		const selectTicketCards = (ticketCardIds: string[]) => {
+		const selectTicketCards = async (ticketCardIds: string[]) => {
 			const game = getGame();
 			if (!game) return;
 
-			game.keepTicketCards(user.id, ticketCardIds);
+			await game.keepTicketCards(user.id, ticketCardIds);
 			emitGameToAllClients(game.id);
 			emitRespectivePlayers();
 		}
@@ -317,7 +317,7 @@ function init_websocket_server() {
 			emitFinalGameToAllClients(game.id);
 		}
 
-		const playerKeepTrainCarCard = (card_id: string | undefined) => {
+		const playerKeepTrainCarCard = async (card_id: string | undefined) => {
 			const game = getGame();
 			if (!game) return;
 
@@ -355,11 +355,11 @@ function init_websocket_server() {
 			}
 		}
 
-		const playerClaimRoute = (route_id: string, color?: Color) => {
+		const playerClaimRoute = async (route_id: string, color?: Color) => {
 			const game = getGame();
 			if (!game) return;
 
-			game.claimRoute(route_id, color);
+			await game.claimRoute(route_id, color);
 			emitGameToAllClients(game.id);
 			emitRespectivePlayers();
 
@@ -368,10 +368,10 @@ function init_websocket_server() {
 			}
 		}
 
-		const playerPass = () => {
+		const playerPass = async () => {
 			const game = getGame();
 			if (!game) return;
-			game.nextTurn();
+			await game.nextTurn();
 			emitGameToAllClients(game.id);
 			emitRespectivePlayers();
 

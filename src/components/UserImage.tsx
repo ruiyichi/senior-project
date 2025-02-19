@@ -27,7 +27,7 @@ export const UserImage = ({ user, onClick, size=50, label, orientation="vertical
 					pointer: onClick !== undefined
 				})}
 				draggable={false}
-				src={!user.id ? '' : `${SERVER_URI}/images/profiles/${user.id}?${Date.now()}`} 
+				src={!user.id ? '' : `${SERVER_URI}/images/profiles/${user.id}`} 
 				alt={user.id}
 				onClick={onClick}
 				width={size}

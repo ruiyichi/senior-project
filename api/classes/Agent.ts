@@ -8,6 +8,10 @@ export class Agent extends Player {
     this.type = 'Agent';
   }
 
+  wait (ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
   selectTicketCards(game: Game) {
     const is_short_route = (c: TicketCard) => {
       return c.points <= 9;
@@ -40,8 +44,12 @@ export class Agent extends Player {
     game.keepTicketCards(this.id, ticket_card_ids_to_keep);
   }
 
-  performTurn(game: Game) {
+  async performTurn(game: Game) {
+    await this.wait(5000);
     game.keepTrainCarCard(this.id);
+    game.emit(game.id);
+    await this.wait(5000);
     game.keepTrainCarCard(this.id);
+    game.emit(game.id);
   }
 }
