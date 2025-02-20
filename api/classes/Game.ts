@@ -5,6 +5,7 @@ import { ACTION, NUM_FACE_UP_TRAIN_CAR_CARDS, NUM_PROPOSED_TICKET_CARDS, NUM_STA
 import { Deck } from "./Deck";
 import { Color, Route, TicketCard, TrainCarCard } from "../types";
 import { Agent } from "./Agent";
+import { Graph, alg } from "@dagrejs/graphlib";
 
 export enum GameStatus {
   PENDING,
@@ -30,7 +31,8 @@ export class Game {
   lastRoundPlayerId: null | string;
   standings: string[];
   emit: Function;
-  emitOnOtherPlayerKeepTrainCarCard: Function
+  emitOnOtherPlayerKeepTrainCarCard: Function;
+  graph: Graph
   
   constructor(players: Player[], emit: Function, emitOnOtherPlayerKeepTrainCarCard: Function) {
     this.id = uuid();
@@ -51,6 +53,19 @@ export class Game {
     this.standings = [];
     this.emit = emit;
     this.emitOnOtherPlayerKeepTrainCarCard = emitOnOtherPlayerKeepTrainCarCard;
+    
+    this.graph = new Graph();
+    TRAIN_ROUTES.forEach(r => {
+      if (!this.graph.hasNode(r.destination)) {
+        this.graph.setNode(r.destination)
+      }
+      if (!this.graph.hasNode(r.start)) {
+        this.graph.setNode(r.start);
+      }
+
+      this.graph.setEdge(r.start, r.destination, r.path.length);
+      this.graph.setEdge(r.destination, r.start, r.path.length);
+    });
   }
 
   updateFaceUpTrainCarCards(replacements?: TrainCarCard[]) {
@@ -265,6 +280,10 @@ export class Game {
     if (!is_initial_ticket_selection) {
       this.nextTurn();
     }
+
+    if (!this.isInitialTicketSelection()) {
+      this.performBotActions();
+    }
   }
 
   keepTrainCarCard(player_id: string, card_id?: string | undefined) {
@@ -425,5 +444,9 @@ export class Game {
       console.log('perform turn');
       await (player as Agent).performTurn(this);
     }
+  }
+
+  shortestPath(start: string) {
+    return alg.dijkstra(this.graph, start, e => this.graph.edge(e));
   }
 }

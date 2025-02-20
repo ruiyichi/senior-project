@@ -13,6 +13,15 @@ export class Agent extends Player {
   }
 
   selectTicketCards(game: Game) {
+    /*const items = Array.from({ length: this.proposedTicketCards.length }).map((_, i) => i + 1);
+    const combinations = this.uniqueCombinations(items);
+
+    combinations.forEach(combo => {
+      // calculate the shortest path sequence that connects all vertices in combo
+      // apply some threshold to select paths that are not too long or too short
+    })*/
+
+    
     const is_short_route = (c: TicketCard) => {
       return c.points <= 9;
     }
@@ -44,6 +53,29 @@ export class Agent extends Player {
     game.keepTicketCards(this.id, ticket_card_ids_to_keep);
   }
 
+  uniqueCombinations(items: number[]) {
+    const result: number[][] = [];
+  
+    for (let r = 1; r <= items.length; r++) {
+      this.generateCombinations(items, r, 0, [], result);
+    }
+  
+    return result;
+  }
+  
+  generateCombinations(items: number[], r: number, start: number, current: number[], result: number[][]) {
+    if (current.length === r) {
+      result.push(current);
+      return;
+    }
+  
+    for (let i = start; i < items.length; i++) {
+      current.push(items[i]);
+      this.generateCombinations(items, r, i + 1, current, result);
+      current.pop();
+    }
+  }
+
   async performTurn(game: Game) {
     await this.wait(3000);
     let kept_card = game.keepTrainCarCard(this.id);
@@ -54,5 +86,12 @@ export class Agent extends Player {
     kept_card = game.keepTrainCarCard(this.id);
     game.emit(game.id);
     game.emitOnOtherPlayerKeepTrainCarCard(game.id, this.id, undefined, kept_card);
+
+    console.log(this.ticketCards);
+    this.ticketCards.forEach(c => {
+      console.log(c);
+      console.log(game.shortestPath(c.start));
+      console.log(game.shortestPath(c.destination));
+    })
   }
 }
