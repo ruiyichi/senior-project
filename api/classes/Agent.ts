@@ -1,6 +1,8 @@
+import { Graph } from "@dagrejs/graphlib";
 import { PlayerColor, TicketCard } from "../types";
 import { Game } from "./Game";
 import { Player } from "./Player";
+import { ICompare, PriorityQueue } from "@datastructures-js/priority-queue";
 
 export class Agent extends Player {
   constructor(id: string, username: string, color: PlayerColor = PlayerColor.RED) {
@@ -13,44 +15,113 @@ export class Agent extends Player {
   }
 
   selectTicketCards(game: Game) {
-    /*const items = Array.from({ length: this.proposedTicketCards.length }).map((_, i) => i + 1);
-    const combinations = this.uniqueCombinations(items);
+    const items = Array.from({ length: this.proposedTicketCards.length }).map((_, i) => i);
+    let combinations = this.uniqueCombinations(items);
+    combinations = combinations.filter(c => c.length > 1);
+    console.log(this.proposedTicketCards)
+
+    const combo_lengths: { combo: number[], length: number }[] = [];
 
     combinations.forEach(combo => {
-      // calculate the shortest path sequence that connects all vertices in combo
-      // apply some threshold to select paths that are not too long or too short
-    })*/
+      let paths = [] as { start: string; destination: string; distance: number; }[];
+      combo.forEach(i => {
+        const v = this.proposedTicketCards[i];
+        const shortest_paths = game.shortestPath(v.start);
 
-    
-    const is_short_route = (c: TicketCard) => {
-      return c.points <= 9;
-    }
+        let current = v.destination;
 
-    const is_medium_route = (c: TicketCard) => {
-      return c.points > 9 && c.points <= 13
-    }
+        while (current !== v.start) {
+          let predecessor = shortest_paths[current].predecessor;
+          paths.push({ start: current, destination: predecessor, distance: shortest_paths[current].distance - shortest_paths[predecessor].distance});
+          current = predecessor;
+        }
+      });
 
-    let num_short_routes = 0;
-    let num_medium_routes = 0;
-    let num_long_routes = 0;
+      console.log(paths);
 
-    this.proposedTicketCards.forEach(c => {
-      if (is_short_route(c)) num_short_routes += 1;
-      if (is_medium_route(c)) num_medium_routes += 1;
-      else num_long_routes += 1;
+      const reduced_graph = new Graph();
+      paths.forEach(r => {
+        if (!reduced_graph.hasNode(r.destination)) {
+          reduced_graph.setNode(r.destination)
+        }
+
+        if (!reduced_graph.hasNode(r.start)) {
+          reduced_graph.setNode(r.start);
+        }
+
+        reduced_graph.setEdge(r.start, r.destination, r.distance);
+        reduced_graph.setEdge(r.destination, r.start, r.distance);
+      });
+
+      console.log(combo); 
+      const mst = this.primMST(reduced_graph);
+
+      let length = 0;
+      for (const connected_component of mst) {
+        for (const path of connected_component) {
+          length += path[2];
+        }
+      }
+      combo_lengths.push({ combo, length });
+      console.log(mst);
     });
-
-    let ticket_card_ids_to_keep = [] as string[];
-
-    if (num_short_routes === 3) {
-      ticket_card_ids_to_keep = this.proposedTicketCards.map(c => c.id);
-    } else if (num_medium_routes === 2) {
-      ticket_card_ids_to_keep = this.proposedTicketCards.filter(c => is_medium_route(c)).map(c => c.id);
-    } else {
-      ticket_card_ids_to_keep = this.proposedTicketCards.map(c => c.id);
+    
+    let min_combo_length = 99999;
+    let combo_to_use = combo_lengths[0].combo;
+    for (const combo_length of combo_lengths) {
+      if (combo_length.length < min_combo_length) {
+        min_combo_length = combo_length.length;
+        combo_to_use = combo_length.combo;
+      }
     }
 
-    game.keepTicketCards(this.id, ticket_card_ids_to_keep);
+    console.log('using combo: ' + combo_to_use);
+    const ids_to_keep = combo_to_use.map(c => this.proposedTicketCards[c].id);
+    game.keepTicketCards(this.id, ids_to_keep);
+  }
+
+  primMST(graph: Graph) {
+    const mst: [string, string, number][][] = [];
+    const visited = new Set<string>();
+    const all_nodes = graph.nodes();
+
+    const comparison: ICompare<[number, string, string]> = (a, b) => {
+      return a[0] - b[0];
+    }
+
+    for (const start_node of all_nodes) {
+      if (visited.has(start_node)) continue;
+
+      const current_component: [string, string, number][] = [];
+
+      const pq = new PriorityQueue(comparison);
+      pq.enqueue([0, start_node, ""]);
+
+      while (pq.size() > 0) {
+        const [weight, node, prev] = pq.dequeue() as [number, string, string];
+  
+        if (visited.has(node)) continue;
+        visited.add(node);
+  
+        if (prev !== "") {
+          current_component.push([prev, node, weight]);
+        }
+  
+        const neighbors = graph.nodeEdges(node) || [];
+        for (const edge of neighbors) {
+          const neighbor = edge.w === node ? edge.v : edge.w;
+          if (!visited.has(neighbor)) {
+            pq.enqueue([graph.edge(edge.v, edge.w) as number, neighbor, node]);
+          }
+        }
+      }
+
+      if (current_component.length > 0) {
+        mst.push(current_component);
+      }
+    }
+
+    return mst;
   }
 
   uniqueCombinations(items: number[]) {
@@ -65,7 +136,7 @@ export class Agent extends Player {
   
   generateCombinations(items: number[], r: number, start: number, current: number[], result: number[][]) {
     if (current.length === r) {
-      result.push(current);
+      result.push([...current]);
       return;
     }
   
@@ -86,12 +157,5 @@ export class Agent extends Player {
     kept_card = game.keepTrainCarCard(this.id);
     game.emit(game.id);
     game.emitOnOtherPlayerKeepTrainCarCard(game.id, this.id, undefined, kept_card);
-
-    console.log(this.ticketCards);
-    this.ticketCards.forEach(c => {
-      console.log(c);
-      console.log(game.shortestPath(c.start));
-      console.log(game.shortestPath(c.destination));
-    })
   }
 }
