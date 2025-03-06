@@ -54,17 +54,11 @@ export class Game {
     this.emit = emit;
     this.emitOnOtherPlayerKeepTrainCarCard = emitOnOtherPlayerKeepTrainCarCard;
     
-    this.graph = new Graph();
+    this.graph = new Graph({ directed: false });
     TRAIN_ROUTES.forEach(r => {
-      if (!this.graph.hasNode(r.destination)) {
-        this.graph.setNode(r.destination)
-      }
-      if (!this.graph.hasNode(r.start)) {
-        this.graph.setNode(r.start);
-      }
-
-      this.graph.setEdge(r.start, r.destination, r.path.length);
-      this.graph.setEdge(r.destination, r.start, r.path.length);
+      this.graph.setNode(r.destination)
+      this.graph.setNode(r.start);
+      this.graph.setEdge(r.start, r.destination, { weight: r.path.length });
     });
   }
 
@@ -349,9 +343,9 @@ export class Game {
 
     this.players.forEach(p => this.proposeTicketCards(p.id));
 
-    this.players.filter(p => p.type === 'Agent').forEach(p => {
-      (p as Agent).selectTicketCards(this);
-    });
+    for (const player of this.players.filter(p => p.type === 'Agent')) {
+      (player as Agent).selectTicketCards(this);
+    }
   }
 
   getSanitizedGame() {
