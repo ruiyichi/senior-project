@@ -5,7 +5,6 @@ import { ACTION, NUM_FACE_UP_TRAIN_CAR_CARDS, NUM_PROPOSED_TICKET_CARDS, NUM_STA
 import { Deck } from "./Deck";
 import { Color, Route, TicketCard, TrainCarCard } from "../types";
 import { Agent } from "./Agent";
-import { Graph, alg } from "@dagrejs/graphlib";
 
 export enum GameStatus {
   PENDING,
@@ -32,7 +31,6 @@ export class Game {
   standings: string[];
   emit: Function;
   emitOnOtherPlayerKeepTrainCarCard: Function;
-  graph: Graph
   
   constructor(players: Player[], emit: Function, emitOnOtherPlayerKeepTrainCarCard: Function) {
     this.id = uuid();
@@ -53,13 +51,6 @@ export class Game {
     this.standings = [];
     this.emit = emit;
     this.emitOnOtherPlayerKeepTrainCarCard = emitOnOtherPlayerKeepTrainCarCard;
-    
-    this.graph = new Graph({ directed: false });
-    TRAIN_ROUTES.forEach(r => {
-      this.graph.setNode(r.destination)
-      this.graph.setNode(r.start);
-      this.graph.setEdge(r.start, r.destination, { weight: r.path.length });
-    });
   }
 
   updateFaceUpTrainCarCards(replacements?: TrainCarCard[]) {
@@ -134,24 +125,36 @@ export class Game {
   }
 
   claimRoute(route_id: string, wild_route_color?: Color) {
-    if (this.status === GameStatus.COMPLETE) return;
+    if (this.status === GameStatus.COMPLETE) {
+      console.log('game is complete');
+      return;
+    }
     const player = this.getPlayerFromId(this.activePlayerId);
 
-    if (!player) return;
-
+    if (!player) {
+      console.log('no player');
+      return;
+    }
     const route = this.routes.find(r => r.id === route_id);
-    if (!route) return;
-
-    if (route.claimed_player_id) return;
-    
-    if (player.numTrainCars < route.path.length) return;
-
+    if (!route) {
+      console.log('no route');
+      return;
+    }
+    if (route.claimed_player_id || route.disabled) {
+      console.log('route already claimed or disabled')
+      return;
+    }
     // insufficient train cars
-    if (player.numTrainCars < route.path.length) return;
+    if (player.numTrainCars < route.path.length) {
+      console.log('not enough train cars')
+      return;
+    }
     
     // no wild route color provided
-    if (route.color === Color.Wild && wild_route_color === undefined) return;
-
+    if (route.color === Color.Wild && wild_route_color === undefined) {
+      console.log('no wild route color')
+      return;
+    }
     const route_cost = route.path.length;
     let route_color = route.color;
 
@@ -163,8 +166,10 @@ export class Game {
     // not enough train cars of route color
     const player_cards_of_route_color = player.trainCarCards.filter(c => c.color === route_color);
     const num_player_wild_cards = player.trainCarCards.filter(c => c.color === Color.Wild).length;
-    if (player_cards_of_route_color.length + num_player_wild_cards < route_cost) return;
-
+    if (player_cards_of_route_color.length + num_player_wild_cards < route_cost) {
+      console.log('not enough train cars')
+      return;
+    }
     const num_wilds_to_use = Math.max(route_cost - player_cards_of_route_color.length, 0);
     const num_player_route_color_cards_to_use = route_cost - num_wilds_to_use;
 
@@ -205,20 +210,6 @@ export class Game {
     if (this.lastRoundPlayerId === null && player.numTrainCars <= 2) {
       this.lastRoundPlayerId = player.id;
     }
-  }
-
-  claimFaceUpTrainCarCard(playerId: string, cardId: string) {
-    if (this.status === GameStatus.COMPLETE) return;
-    const player = this.getPlayerFromId(playerId);
-
-    if (!player) return;
-    if (playerId !== this.activePlayerId) return;
-    
-    const card = this.faceUpTrainCarCards.find(c => c.id === cardId);
-    if (!card) return;
-
-    player.trainCarCards.push(card);
-    this.faceUpTrainCarCards = this.faceUpTrainCarCards.filter(c => c.id !== cardId);
   }
 
   proposeTicketCards(player_id: string) {
@@ -438,9 +429,5 @@ export class Game {
       console.log('perform turn');
       await (player as Agent).performTurn(this);
     }
-  }
-
-  shortestPath(start: string) {
-    return alg.dijkstra(this.graph, start, e => this.graph.edge(e));
   }
 }

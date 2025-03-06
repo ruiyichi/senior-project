@@ -1,6 +1,5 @@
 import { Graph, alg } from "@dagrejs/graphlib";
 import { TRAIN_ROUTES } from "../constants";
-import { ICompare, PriorityQueue } from '@datastructures-js/priority-queue';
 
 export class RouteGraph {
   graph: Graph;
@@ -69,39 +68,5 @@ export class RouteGraph {
     }
 
     return longestPath;
-  }
-
-  primMST(startNode: string): [string, string, number][] {
-    const mst: [string, string, number][] = [];
-    const visited = new Set<string>();
-
-    const comparison: ICompare<[number, string, string]> = (a, b) => {
-      return a[0] - b[0];
-    }
-
-    const pq = new PriorityQueue(comparison);
-
-    pq.enqueue([0, startNode, ""]);
-
-    while (pq.size() > 0) {
-      const [weight, node, prev] = pq.dequeue() as [number, string, string];
-
-      if (visited.has(node)) continue;
-      visited.add(node);
-
-      if (prev !== "") {
-        mst.push([prev, node, weight]);
-      }
-
-      const neighbors = this.graph.nodeEdges(node) || [];
-      for (const edge of neighbors) {
-        const neighbor = edge.w === node ? edge.v : edge.w;
-        if (!visited.has(neighbor)) {
-          pq.enqueue([this.graph.edge(edge.v, edge.w) as number, neighbor, node]);
-        }
-      }
-    }
-
-    return mst;
   }
 }
