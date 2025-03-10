@@ -178,7 +178,10 @@ function init_websocket_server() {
 			const sockets_in_game = getSocketIdsInRoom(game_id);
 			const game = game_id_to_game[game_id];
 			if (!game) return;
-			sockets_in_game?.forEach(socket_id => getSocketByID(socket_id)?.emit("updateGame", game.getSanitizedGame()));
+			sockets_in_game?.forEach(socket_id => {
+				console.log(`sending game to ${socket_id}`)	
+				getSocketByID(socket_id)?.emit("updateGame", game.getSanitizedGame());
+			})
 		}
 
 		const emitFinalGameToAllClients = (game_id: string) => {
@@ -279,9 +282,8 @@ function init_websocket_server() {
 				socket?.join(game.id);
 			});
 
+
 			game.startGame();
-			emitGameToAllClients(game.id);
-			emitRespectivePlayers();
 		}
 
 		const handleSocketConnect = () => {

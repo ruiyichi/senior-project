@@ -29,10 +29,10 @@ export class Game {
   status: GameStatus;
   lastRoundPlayerId: null | string;
   standings: string[];
-  emit: Function;
+  emit: (game_id: string) => void;
   emitOnOtherPlayerKeepTrainCarCard: Function;
   
-  constructor(players: Player[], emit: Function, emitOnOtherPlayerKeepTrainCarCard: Function) {
+  constructor(players: Player[], emit: (game_id: string) => void, emitOnOtherPlayerKeepTrainCarCard: Function) {
     this.id = uuid();
     this.trainCarCardDeck = this.initializeTrainCarCardDeck();
     this.ticketCardDeck = this.initializeTicketCardDeck();
@@ -325,7 +325,7 @@ export class Game {
     this.proposeTicketCards(player_id);
   }
 
-  startGame() {
+  async startGame() {
     if (this.status === GameStatus.COMPLETE) return;
 
     this.status = GameStatus.IN_PROGRESS;
@@ -334,12 +334,17 @@ export class Game {
 
     this.players.forEach(p => this.proposeTicketCards(p.id));
 
+    this.emit(this.id);
+
     for (const player of this.players.filter(p => p.type === 'Agent')) {
-      (player as Agent).selectTicketCards(this);
+      await (player as Agent).selectTicketCards(this);
     }
+
+    this.emit(this.id);
   }
 
   getSanitizedGame() {
+    console.log('got sanitized game')
     return {
       id: this.id,
       numTrainCarCards: this.trainCarCardDeck.cards.length,

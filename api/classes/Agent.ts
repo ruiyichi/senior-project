@@ -48,17 +48,17 @@ export class Agent extends Player {
     return shortest_path;
   }
 
-  selectTicketCards(game: Game) {
+  async selectTicketCards(game: Game) {
     const items = Array.from({ length: this.proposedTicketCards.length }).map((_, i) => i);
     let combinations = this.uniqueCombinations(items);
     combinations = combinations.filter(c => c.length > 1);
     
     let best_selections = [] as { ticket_card_idxs: number[], routes: Route[] }[][];
     
-    combinations.forEach(ticket_card_idxs => {
+    for (const ticket_card_idxs of combinations) {
       const city_names_in_combo = ticket_card_idxs.map(ticket_idx => [this.proposedTicketCards[ticket_idx].start, this.proposedTicketCards[ticket_idx].destination]).flat();
       console.log(city_names_in_combo);
-      const tree = find_steiner_tree(this.graph, city_names_in_combo);
+      const tree = await find_steiner_tree(this.graph, city_names_in_combo);
 
       if (tree) {
         const routes = tree.edges().map(e => this.findRoute(game, e.v, e.w) as Route);
@@ -74,8 +74,8 @@ export class Agent extends Player {
 
         best_selections.push(selection);
       }
-    });
-
+    }
+      
     let best_selection = best_selections[0];
     let best_points_per_train = Infinity;
 
@@ -143,7 +143,7 @@ export class Agent extends Player {
     });
   }
 
-  updateDesiredRoutes(game: Game) {
+  async updateDesiredRoutes(game: Game) {
     const updated_desired_routes = [] as IdealRoute[];
     for (const route_collection of this.desiredRoutes) {
       let new_routes = [] as Route[];
@@ -157,7 +157,7 @@ export class Agent extends Player {
         if (route_claimed || route.disabled) {
           this.graph.removeEdge(route.start, route.destination);
           
-          const tree = find_steiner_tree(this.graph, [route.start, route.destination]);
+          const tree = await find_steiner_tree(this.graph, [route.start, route.destination]);
           if (tree) {
             const routes = tree.edges().map(e => this.findRoute(game, e.v, e.w) as Route);
             routes.forEach(r => {
@@ -166,7 +166,7 @@ export class Agent extends Player {
               }
             });
           } else {
-            const tree = find_steiner_tree(this.graph, [...route_collection.route.map(r => r.start), ...route_collection.route.map(r => r.destination)]);
+            const tree = await find_steiner_tree(this.graph, [...route_collection.route.map(r => r.start), ...route_collection.route.map(r => r.destination)]);
             if (tree) {
               const routes = tree.edges().map(e => this.findRoute(game, e.v, e.w) as Route);
               new_routes = routes;
@@ -266,7 +266,7 @@ export class Agent extends Player {
       this.selectMoreTicketCards(game);
       game.emit(game.id);
     } else {
-      this.updateDesiredRoutes(game);
+      await this.updateDesiredRoutes(game);
       console.log(this.desiredRoutes);
 
       if (this.desiredRoutes.length === 0) {

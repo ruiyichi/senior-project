@@ -1,4 +1,6 @@
 import { Graph } from "@dagrejs/graphlib";
+import { Worker } from "worker_threads";
+import path = require("path");
 
 interface WeightedEdge {
   v: string;
@@ -6,7 +8,7 @@ interface WeightedEdge {
   weight: number;
 }
 
-const brute_force_steiner_tree = (graph: Graph, target_vertices: string[]) => {
+export const brute_force_steiner_tree = (graph: Graph, target_vertices: string[]) => {
   const all_vertices = graph.nodes();
   const other_vertices = all_vertices.filter(v => !target_vertices.includes(v));
   
@@ -166,6 +168,35 @@ class DisjointSet {
   }
 }
 
-export const find_steiner_tree = (graph: Graph, vertices: string[]) => {
-  return brute_force_steiner_tree(graph, vertices);
-}
+export const find_steiner_tree = (graph: Graph, vertices: string[]): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    const worker = new Worker(
+      path.join(__dirname, './steinerWorker.ts'), {
+        workerData: { 
+          nodes: graph.nodes(), 
+          edges: graph.edges().map(e => ({
+            start: e.v,
+            destination: e.w,
+            weight: (e as WeightedEdge).weight
+          })),
+          vertices 
+        },
+        execArgv: ['--require', 'ts-node/register']
+      }
+    );
+
+    worker.on("message", (data) => {
+      if (data.success) {
+        resolve(data.result);
+      } else {
+        reject(data.error);
+      }
+      worker.terminate();
+    });
+
+    worker.on("error", (error) => {
+      reject(error);
+      worker.terminate();
+    });
+  });
+};
