@@ -38,35 +38,31 @@ export class RouteGraph {
   longestPathLength() {
     let longestPath = 0;
     const graph = this.graph;
-
-    const dfs = (city: string, path: string[], visited: Set<string>) => {
-      visited.add(city);
-      let path_length = 0;
-      if (path.length > 1) {
-        for (let i = 0; i < path.length; i++) {
-          if (i + 1 === path.length) continue;
-          const first_city = path[i];
-          const second_city = path[i + 1];
-          path_length += this.graph.edge(first_city, second_city);
-        }
+  
+    const dfs = (currentCity: string, currentPathLength: number, visited: Set<string>) => {
+      if (currentPathLength > longestPath) {
+        longestPath = currentPathLength;
       }
-      
-      if (path_length > longestPath) {
-        longestPath = path_length;
-      }
-
-      for (const neighbor of graph.neighbors(city) || []) {
+  
+      for (const neighbor of graph.neighbors(currentCity) || []) {
         if (!visited.has(neighbor)) {
-          dfs(neighbor, [...path, neighbor], visited);
+          visited.add(neighbor);
+          
+          const edgeWeight = this.findRoute(currentCity, neighbor)?.path.length;
+          
+          dfs(neighbor, currentPathLength + edgeWeight!, visited);
+          
+          visited.delete(neighbor);
         }
       }
-      visited.delete(city);
+    };
+  
+    for (const startCity of graph.nodes()) {
+      const visited = new Set<string>();
+      visited.add(startCity);
+      dfs(startCity, 0, visited);
     }
-
-    for (const city of graph.nodes()) {
-      dfs(city, [city], new Set());
-    }
-
+  
     return longestPath;
   }
 }
