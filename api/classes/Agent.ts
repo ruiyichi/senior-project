@@ -3,7 +3,8 @@ import { Color, PlayerColor, Route } from "../types";
 import { Game } from "./Game";
 import { Player } from "./Player";
 import { ROUTE_LENGTH_TO_POINTS, TRAIN_ROUTES } from "../constants";
-import { find_steiner_tree } from "./SteinerTree";
+import { example, find_steiner_tree } from "./SteinerTree";
+import { randomElementFromArr } from "../utils";
 
 interface IdealRoute {
   ticket_ids: string[],
@@ -57,8 +58,10 @@ export class Agent extends Player {
     
     for (const ticket_card_idxs of combinations) {
       const city_names_in_combo = ticket_card_idxs.map(ticket_idx => [this.proposedTicketCards[ticket_idx].start, this.proposedTicketCards[ticket_idx].destination]).flat();
-      console.log(city_names_in_combo);
-      const tree = await find_steiner_tree(this.graph, city_names_in_combo);
+      const set = new Set<string>();
+      city_names_in_combo.forEach(name => set.add(name));
+      console.log(set);
+      const tree = await find_steiner_tree(this.graph, Array.from(set));
 
       if (tree) {
         const routes = tree.edges().map(e => this.findRoute(game, e.v, e.w) as Route);
@@ -95,14 +98,14 @@ export class Agent extends Player {
       const ticket_points = selection.map(s => s.ticket_card_idxs).flat().reduce((sum, ticket_idx) => sum + this.proposedTicketCards[ticket_idx].points, 0);
       const points_per_train = (total_points + ticket_points) / total_weight;
 
-      if (points_per_train < best_points_per_train) {
+      if (points_per_train > best_points_per_train) {
         best_selection = selection;
       }
     });
 
     const ids_to_keep = best_selection.map(s => s.ticket_card_idxs).flat().map(c => this.proposedTicketCards[c].id);
     this.desiredRoutes = best_selection.map(s => ({ ticket_ids: s.ticket_card_idxs.map(idx => this.proposedTicketCards[idx].id), route: s.routes }));
-    console.log(this.desiredRoutes);
+    console.log(JSON.stringify(this.desiredRoutes, undefined, 4));
     game.keepTicketCards(this.id, ids_to_keep);
   }
 
@@ -137,14 +140,19 @@ export class Agent extends Player {
 
   updateGraph(game: Game) {
     game.routes.forEach(r => {
-      if (this.graph.hasEdge(r.start, r.destination) && (r.claimed_player_id !== this.id || r.disabled)) {
+      if (this.graph.hasEdge(r.start, r.destination) && ((r.claimed_player_id !== undefined && r.claimed_player_id !== this.id) || r.disabled)) {
         this.graph.removeEdge(r.start, r.destination);
       }
     });
+    console.log('num edges:')
+    console.log(this.graph.edgeCount())
   }
 
   async updateDesiredRoutes(game: Game) {
     const updated_desired_routes = [] as IdealRoute[];
+
+    if (this.desiredRoutes.length === 0) return;
+    
     for (const route_collection of this.desiredRoutes) {
       let new_routes = [] as Route[];
 
@@ -155,21 +163,39 @@ export class Agent extends Player {
       for (const route of route_collection.route) {
         const route_claimed = route.claimed_player_id !== undefined;
         if (route_claimed || route.disabled) {
+          console.log(`desired route no longer available: ${route.start} - ${route.destination}`)
           this.graph.removeEdge(route.start, route.destination);
-          
+
+          console.log(`looking for tree between ${route.start} and ${route.destination}`)
           const tree = await find_steiner_tree(this.graph, [route.start, route.destination]);
           if (tree) {
+            console.log(JSON.stringify(tree.edges(), undefined, 4))
             const routes = tree.edges().map(e => this.findRoute(game, e.v, e.w) as Route);
             routes.forEach(r => {
               if (!route_collection.route.map(r => r.id).includes(r.id)) {
                 new_routes.push(r);
               }
             });
+
+            console.log('found alternate route')
+            console.log(JSON.stringify(routes, undefined, 4))
           } else {
-            const tree = await find_steiner_tree(this.graph, [...route_collection.route.map(r => r.start), ...route_collection.route.map(r => r.destination)]);
+            const set = new Set<string>();
+            route_collection.route.forEach(r => {
+              set.add(r.start);
+              set.add(r.destination);
+            });
+            console.log(route_collection);
+
+            const tree = await find_steiner_tree(this.graph, Array.from(set));
+            console.log('replacing entire route')
             if (tree) {
               const routes = tree.edges().map(e => this.findRoute(game, e.v, e.w) as Route);
               new_routes = routes;
+            } else {
+              console.log('using shortest path instead')
+              const shortest_path = this.findShortestPath(route.start, route.destination);
+              new_routes = shortest_path.map(p => this.findRoute(game, p.start, p.destination) as Route);
             }
             break;
           }
@@ -185,6 +211,7 @@ export class Agent extends Player {
 
     this.desiredRoutes = updated_desired_routes;
     console.log('updated desired routes');
+    console.log(JSON.stringify(this.desiredRoutes, undefined, 4))
   }
 
   determineColorForWildRoute(numCardsNeeded: number) {
@@ -202,6 +229,10 @@ export class Agent extends Player {
     }, {});
 
     const colorsToClaimRouteWith = Object.keys(colorCounts).filter(color => colorCounts[color] + numWildCards >= numCardsNeeded);
+    
+    if (numWildCards >= numCardsNeeded) {
+      colorsToClaimRouteWith.push(Color.Wild);
+    }
 
     if (colorsToClaimRouteWith.length === 1) {
       return colorsToClaimRouteWith[0];
@@ -214,7 +245,7 @@ export class Agent extends Player {
         res[c.color] = 0;
       }
 
-      res[c.color] += 1;
+      res[c.color] += c.path.length;
       return res;
     }, {});
 
@@ -224,10 +255,21 @@ export class Agent extends Player {
       }
     });
 
+    console.log('colors to claim route with')
+    console.log(colorsToClaimRouteWith)
+    console.log('map of colors needed')
     console.log(mapOfColorsNeeded);
 
     const filtered = Object.fromEntries(Object.entries(mapOfColorsNeeded).filter(([key, val]) => colorsToClaimRouteWith.includes(key))) as Record<string, number>;
     console.log(filtered)
+
+    if (Object.keys(filtered).length === 0) {
+      if (colorsToClaimRouteWith.length > 1 && colorsToClaimRouteWith.includes(Color.Wild)) {
+        return randomElementFromArr(colorsToClaimRouteWith.filter(c => c !== Color.Wild));
+      }
+      return randomElementFromArr(colorsToClaimRouteWith);
+    }
+
     const minKey = Object.entries(filtered).reduce((min, [key, value]) => 
       value < filtered[min] ? key : min
     , Object.keys(filtered)[0]);
@@ -261,20 +303,17 @@ export class Agent extends Player {
   async performTurn(game: Game) {
     this.updateGraph(game);
 
-    if (this.ticketCards.every(c => c.complete)) {
+    if (this.ticketCards.every(c => c.complete) || this.desiredRoutes.length === 0) {
       game.proposeTicketCards(this.id);
       this.selectMoreTicketCards(game);
       game.emit(game.id);
     } else {
       await this.updateDesiredRoutes(game);
-      console.log(this.desiredRoutes);
 
       if (this.desiredRoutes.length === 0) {
         console.log('no desired routes');
         return;
       }
-      console.log(this.desiredRoutes);
-
       const first_ideal_route = this.desiredRoutes[0];
 
       const claimableRoute = this.getClaimableRoute();
@@ -295,6 +334,9 @@ export class Agent extends Player {
         if (this.desiredRoutes[0].route.length === 0) {
           delete this.desiredRoutes[0];
         }
+
+        console.log('routes after claiming')
+        console.log(this.desiredRoutes)
         game.emit(game.id);
       } else {
         const colors_needed = first_ideal_route.route.filter(r => r.color !== Color.Wild).map(r => r.color);

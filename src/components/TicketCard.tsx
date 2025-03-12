@@ -6,7 +6,7 @@ type TicketCardProps = {
   card: TicketCardType, 
   onClick?: React.MouseEventHandler<HTMLDivElement>, 
   classNames?: string | string[],
-  showStatus: boolean
+  showStatus?: boolean
 };
 
 const TicketCard = ({ card, onClick, classNames: customClassNames, showStatus=false }: TicketCardProps) => {

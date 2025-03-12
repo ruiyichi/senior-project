@@ -344,7 +344,6 @@ export class Game {
   }
 
   getSanitizedGame() {
-    console.log('got sanitized game')
     return {
       id: this.id,
       numTrainCarCards: this.trainCarCardDeck.cards.length,

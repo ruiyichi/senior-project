@@ -168,26 +168,58 @@ class DisjointSet {
   }
 }
 
-export const find_steiner_tree = (graph: Graph, vertices: string[]): Promise<any> => {
+export const example = (graph: Graph, vertices: string[]) => {
+  const res = brute_force_steiner_tree(graph, vertices)
+  if (res) {
+    console.log("Steiner Tree edges:");
+    res.edges().forEach(e => {
+      console.log(`${e.v} -- ${e.w} : weight ${res.edge(e).weight}`);
+    });
+  } else {
+    console.log("No tree found");
+  }
+}
+
+export const find_steiner_tree = (graph: Graph, vertices: string[]): Promise<Graph | null> => {
+  const unique_vertices = new Set<string>();
+  vertices.forEach(v => unique_vertices.add(v));
+
+  const worker_data = { 
+    nodes: graph.nodes(), 
+    edges: graph.edges().map(e => ({
+      start: e.v,
+      destination: e.w,
+      weight: graph.edge(e.v, e.w).weight
+    })),
+    vertices: Array.from(unique_vertices) 
+  };
+
   return new Promise((resolve, reject) => {
     const worker = new Worker(
       path.join(__dirname, './steinerWorker.ts'), {
-        workerData: { 
-          nodes: graph.nodes(), 
-          edges: graph.edges().map(e => ({
-            start: e.v,
-            destination: e.w,
-            weight: (e as WeightedEdge).weight
-          })),
-          vertices 
-        },
+        workerData: worker_data,
         execArgv: ['--require', 'ts-node/register']
       }
     );
 
     worker.on("message", (data) => {
       if (data.success) {
-        resolve(data.result);
+        const res = data.result;
+
+        if (res) {
+          const graph = new Graph({ directed: false });
+          res.nodes.forEach(node => {
+            graph.setNode(node);
+          });
+          
+          res.edges.forEach(edge => {
+            graph.setEdge(edge.start, edge.destination, { weight: edge.weight })
+          });
+
+          resolve(graph);
+        } else {
+          resolve(data.result);
+        }
       } else {
         reject(data.error);
       }
@@ -195,6 +227,7 @@ export const find_steiner_tree = (graph: Graph, vertices: string[]): Promise<any
     });
 
     worker.on("error", (error) => {
+      console.log(error);
       reject(error);
       worker.terminate();
     });

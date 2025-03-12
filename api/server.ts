@@ -179,7 +179,6 @@ function init_websocket_server() {
 			const game = game_id_to_game[game_id];
 			if (!game) return;
 			sockets_in_game?.forEach(socket_id => {
-				console.log(`sending game to ${socket_id}`)	
 				getSocketByID(socket_id)?.emit("updateGame", game.getSanitizedGame());
 			})
 		}
