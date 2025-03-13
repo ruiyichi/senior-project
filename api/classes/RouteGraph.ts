@@ -17,7 +17,10 @@ export class RouteGraph {
   }
 
   addRoute(start: string, destination: string) {
-    this.graph.setEdge(start, destination);
+    const route = this.findRoute(start, destination);
+    if (route) {
+      this.graph.setEdge(start, destination, { weight: route.path.length });
+    }
   }
 
   hasPath(start: string, destination: string) {

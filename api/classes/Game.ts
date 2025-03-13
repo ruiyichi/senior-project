@@ -127,33 +127,32 @@ export class Game {
   claimRoute(route_id: string, wild_route_color?: Color) {
     if (this.status === GameStatus.COMPLETE) {
       console.log('game is complete');
-      return;
+      return false;
     }
     const player = this.getPlayerFromId(this.activePlayerId);
 
     if (!player) {
       console.log('no player');
-      return;
+      return false;
     }
     const route = this.routes.find(r => r.id === route_id);
     if (!route) {
       console.log('no route');
-      return;
+      return false;
     }
     if (route.claimed_player_id || route.disabled) {
-      console.log('route already claimed or disabled')
-      return;
+      return false;
     }
     // insufficient train cars
     if (player.numTrainCars < route.path.length) {
       console.log('not enough train cars')
-      return;
+      return false;
     }
     
     // no wild route color provided
     if (route.color === Color.Wild && wild_route_color === undefined) {
       console.log('no wild route color')
-      return;
+      return false;
     }
     const route_cost = route.path.length;
     let route_color = route.color;
@@ -168,7 +167,7 @@ export class Game {
     const num_player_wild_cards = player.trainCarCards.filter(c => c.color === Color.Wild).length;
     if (player_cards_of_route_color.length + num_player_wild_cards < route_cost) {
       console.log('not enough train cars')
-      return;
+      return false;
     }
     const num_wilds_to_use = Math.max(route_cost - player_cards_of_route_color.length, 0);
     const num_player_route_color_cards_to_use = route_cost - num_wilds_to_use;
@@ -210,6 +209,8 @@ export class Game {
     if (this.lastRoundPlayerId === null && player.numTrainCars <= 2) {
       this.lastRoundPlayerId = player.id;
     }
+
+    return true;
   }
 
   proposeTicketCards(player_id: string) {
@@ -253,7 +254,13 @@ export class Game {
 
     if (new_ticket_cards.length < min_num_cards_to_keep) return;
     
-    new_ticket_cards.forEach(card => player.ticketCards.push(card));
+    new_ticket_cards.forEach(card => {
+      if (player.routeGraph.hasPath(card.start, card.destination)) {
+        card.complete = true;
+      }
+      player.ticketCards.push(card);
+    });
+    
     for (const card of player.proposedTicketCards) {
       if (!ticket_card_ids.includes(card.id)) {
         this.ticketCardDeck.cards.unshift(card);
@@ -341,6 +348,8 @@ export class Game {
     }
 
     this.emit(this.id);
+
+    await this.performBotActions();
   }
 
   getSanitizedGame() {
@@ -426,6 +435,8 @@ export class Game {
   }
 
   async performBotActions() {
+    if (this.isInitialTicketSelection()) return;
+
     const player = this.getPlayerFromId(this.activePlayerId);
     if (!player) return;
 

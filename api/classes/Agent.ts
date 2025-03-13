@@ -1,5 +1,5 @@
 import { Graph, alg } from "@dagrejs/graphlib";
-import { Color, PlayerColor, Route } from "../types";
+import { Color, PlayerColor, Route, TicketCard } from "../types";
 import { Game } from "./Game";
 import { Player } from "./Player";
 import { ROUTE_LENGTH_TO_POINTS, TRAIN_ROUTES } from "../constants";
@@ -104,12 +104,97 @@ export class Agent extends Player {
 
     const ids_to_keep = best_selection.map(s => s.ticket_card_idxs).flat().map(c => this.proposedTicketCards[c].id);
     this.desiredRoutes = best_selection.map(s => ({ ticket_ids: s.ticket_card_idxs.map(idx => this.proposedTicketCards[idx].id), route: s.routes }));
+
+    console.log('ticket cards')
+    console.log(this.proposedTicketCards.filter(c => ids_to_keep.includes(c.id)));
+
     game.keepTicketCards(this.id, ids_to_keep);
   }
 
   selectMoreTicketCards(game: Game) {
     game.proposeTicketCards(this.id);
-    game.keepTicketCards(this.id, [this.proposedTicketCards[0].id]);
+
+    if (this.proposedTicketCards.length === 0) {
+      game.nextTurn();
+      return;
+    }
+
+    const ticket_cards_to_select = [] as TicketCard[];
+    const possible_ticket_cards = [] as { ticket_id: string, points_per_train_car: number, edges: [string, string][] }[];
+
+    this.proposedTicketCards.forEach(ticket => {
+      if (this.routeGraph.hasPath(ticket.start, ticket.destination)) {
+        ticket_cards_to_select.push(ticket);
+      }
+
+      const shortest_path_to_ticket_start = this.iterativeDeepening(this.routeGraph.graph, this.graph, ticket.start, 5);
+      if (!shortest_path_to_ticket_start) {
+        return;
+      }
+      
+      const shortest_path_to_ticket_dest = this.iterativeDeepening(this.routeGraph.graph, this.graph, ticket.destination, 5);
+      if (!shortest_path_to_ticket_dest) {
+        return;
+      }
+
+      if (this.numTrainCars < (shortest_path_to_ticket_start.totalWeight + shortest_path_to_ticket_dest.totalWeight)) {
+        return;
+      }
+
+      possible_ticket_cards.push({ 
+        ticket_id: ticket.id,
+        points_per_train_car: (
+          shortest_path_to_ticket_dest.bestPointsPerTrainCar * shortest_path_to_ticket_dest.totalWeight + 
+          shortest_path_to_ticket_start.bestPointsPerTrainCar * shortest_path_to_ticket_start.totalWeight +
+          ticket.points
+        ) / (shortest_path_to_ticket_dest.totalWeight + shortest_path_to_ticket_start.totalWeight), 
+        edges: [...shortest_path_to_ticket_dest.unclaimedEdges, ...shortest_path_to_ticket_start.unclaimedEdges]
+      });
+    });
+      
+    if (possible_ticket_cards.length === 0) {
+      if (ticket_cards_to_select.length === 0) {
+        const ticket_card_with_min_points = this.proposedTicketCards.reduce((min, ticket) => (ticket.points < min.points ? ticket : min), this.proposedTicketCards[0]);
+        ticket_cards_to_select.push(ticket_card_with_min_points);
+      }
+
+      console.log('already completed ticket cards')
+      console.log(this.proposedTicketCards);
+      console.log(ticket_cards_to_select)
+      game.keepTicketCards(this.id, ticket_cards_to_select.map(t => t.id));
+      return;
+    }
+
+    const most_points_scored_per_train_car = 0;
+    let best_ticket = possible_ticket_cards[0];
+    for (const possible_ticket_card of possible_ticket_cards) {
+      if (possible_ticket_card.points_per_train_car > most_points_scored_per_train_car) {
+        best_ticket = possible_ticket_card;
+      }
+    }
+
+    const ticket_card_to_add = this.proposedTicketCards.find(t => t.id === best_ticket.ticket_id);
+    if (ticket_card_to_add) {
+      ticket_cards_to_select.push(ticket_card_to_add);
+
+      const route_objects = [] as Route[];
+      best_ticket.edges.forEach(e => {
+        const route = this.findRoute(game, e[0], e[1]);
+        if (route) {
+          route_objects.push(route);
+        }
+      });
+
+      this.desiredRoutes.push({
+        ticket_ids: [ticket_card_to_add.id],
+        route: route_objects
+      });
+    }
+
+    console.log('more ticket cards')
+    console.log(ticket_cards_to_select)
+
+    game.keepTicketCards(this.id, ticket_cards_to_select.map(t => t.id));
   }
 
   uniqueCombinations(items: number[]) {
@@ -137,14 +222,14 @@ export class Agent extends Player {
 
   updateGraph(game: Game) {
     game.routes.forEach(r => {
-      if (this.graph.hasEdge(r.start, r.destination) && ((r.claimed_player_id !== undefined && r.claimed_player_id !== this.id) || r.disabled)) {
+      if (this.graph.hasEdge(r.start, r.destination) && (r.claimed_player_id !== undefined || r.disabled)) {
         this.graph.removeEdge(r.start, r.destination);
       }
     });
   }
 
   removeDuplicateDesiredRoutes() {
-    const unique_routes = new Set<string>();
+    const unique_route_ids = new Set<string>();
 
     const new_desired_routes = [] as IdealRoute[];
 
@@ -152,10 +237,10 @@ export class Agent extends Player {
       const new_ideal_route = {  ticket_ids: route_collection.ticket_ids, route: [] as Route[] };
 
       route_collection.route.forEach(r => {
-        if (!unique_routes.has(r.id)) {
+        if (!unique_route_ids.has(r.id)) {
           new_ideal_route.route.push(r);
         }
-        unique_routes.add(r.id);
+        unique_route_ids.add(r.id);
       });
 
       new_desired_routes.push(new_ideal_route);
@@ -181,13 +266,10 @@ export class Agent extends Player {
       for (const route of route_collection.route) {
         const route_claimed = route.claimed_player_id !== undefined;
         if (route_claimed || route.disabled) {
-          console.log(`desired route no longer available: ${route.start} - ${route.destination}`)
           this.graph.removeEdge(route.start, route.destination);
 
-          console.log(`looking for tree between ${route.start} and ${route.destination}`)
           const tree = await find_steiner_tree(this.graph, [route.start, route.destination]);
           if (tree) {
-            console.log(JSON.stringify(tree.edges(), undefined, 4))
             const routes = tree.edges().map(e => this.findRoute(game, e.v, e.w) as Route);
             routes.forEach(r => {
               if (!route_collection.route.map(r => r.id).includes(r.id)) {
@@ -195,23 +277,18 @@ export class Agent extends Player {
               }
             });
 
-            console.log('found alternate route')
-            console.log(JSON.stringify(routes, undefined, 4))
           } else {
             const set = new Set<string>();
             route_collection.route.forEach(r => {
               set.add(r.start);
               set.add(r.destination);
             });
-            console.log(route_collection);
 
             const tree = await find_steiner_tree(this.graph, Array.from(set));
-            console.log('replacing entire route')
             if (tree) {
               const routes = tree.edges().map(e => this.findRoute(game, e.v, e.w) as Route);
               new_routes = routes;
             } else {
-              console.log('using shortest path instead')
               const shortest_path = this.findShortestPath(route.start, route.destination);
               if (shortest_path.length === 0) {
                 new_routes = [];
@@ -234,9 +311,6 @@ export class Agent extends Player {
     this.desiredRoutes = updated_desired_routes;
 
     this.removeDuplicateDesiredRoutes();
-
-    console.log('updated desired routes');
-    console.log(JSON.stringify(this.desiredRoutes, undefined, 4))
   }
 
   determineColorForWildRoute(numCardsNeeded: number) {
@@ -323,34 +397,42 @@ export class Agent extends Player {
     this.updateGraph(game);
 
     if (this.ticketCards.every(c => c.complete) || this.desiredRoutes.length === 0) {
-      game.proposeTicketCards(this.id);
+      await this.wait(2000);
       this.selectMoreTicketCards(game);
+      this.removeDuplicateDesiredRoutes();
       game.emit(game.id);
     } else {
       await this.updateDesiredRoutes(game);
 
       if (this.desiredRoutes.length === 0) {
         console.log('no desired routes');
+        game.nextTurn();
+        game.emit(game.id);
         return;
       }
+      console.log(this.desiredRoutes)
       const first_ideal_route = this.desiredRoutes[0];
 
       const claimableRoute = this.getClaimableRoute();
       if (claimableRoute) {
-        await this.wait(3000);
+        await this.wait(2000);
         if (claimableRoute.color === Color.Wild) {
           const color_to_claim_with = this.determineColorForWildRoute(claimableRoute.path.length) as Color;
-          game.claimRoute(claimableRoute.id, color_to_claim_with);
+          const res = game.claimRoute(claimableRoute.id, color_to_claim_with);
+          if (!res) {
+            console.log(JSON.stringify(this.desiredRoutes, undefined, 4));
+          }
         } else {
-          game.claimRoute(claimableRoute.id);
+          const res = game.claimRoute(claimableRoute.id);
+          if (!res) {
+            console.log(JSON.stringify(this.desiredRoutes, undefined, 4));
+          }
         }
         this.desiredRoutes[0].route = this.desiredRoutes[0].route.filter(r => r.id !== claimableRoute.id);
         if (this.desiredRoutes[0].route.length === 0) {
           this.desiredRoutes = this.desiredRoutes.slice(1, this.desiredRoutes.length);
         }
 
-        console.log('routes after claiming')
-        console.log(JSON.stringify(this.desiredRoutes, undefined, 4));
         game.emit(game.id);
       } else {
         const colors_needed = first_ideal_route.route.filter(r => r.color !== Color.Wild).map(r => r.color);
@@ -358,7 +440,7 @@ export class Agent extends Player {
         let found_card = false;
         for (const available_card of game.faceUpTrainCarCards) {
           if (colors_needed.includes(available_card.color)) {
-            await this.wait(3000);
+            await this.wait(2000);
             let kept_card = game.keepTrainCarCard(this.id, available_card.id);
             game.emit(game.id);
             game.emitOnOtherPlayerKeepTrainCarCard(game.id, this.id, available_card.id, kept_card);
@@ -370,7 +452,7 @@ export class Agent extends Player {
         if (found_card) {
           found_card = false;
         } else {
-          await this.wait(3000);
+          await this.wait(2000);
           let kept_card = game.keepTrainCarCard(this.id);
           game.emit(game.id);
           game.emitOnOtherPlayerKeepTrainCarCard(game.id, this.id, undefined, kept_card);
@@ -378,7 +460,7 @@ export class Agent extends Player {
 
         for (const available_card of game.faceUpTrainCarCards) {
           if (colors_needed.includes(available_card.color)) {
-            await this.wait(3000);
+            await this.wait(2000);
             let kept_card = game.keepTrainCarCard(this.id, available_card.id);
             game.emit(game.id);
             game.emitOnOtherPlayerKeepTrainCarCard(game.id, this.id, available_card.id, kept_card);
@@ -388,12 +470,119 @@ export class Agent extends Player {
         }
 
         if (!found_card) {
-          await this.wait(3000);
+          await this.wait(2000);
           let kept_card = game.keepTrainCarCard(this.id);
           game.emit(game.id);
           game.emitOnOtherPlayerKeepTrainCarCard(game.id, this.id, undefined, kept_card);
         }
       }
     }
+  }
+
+  iterativeDeepening(owned_graph: Graph, unclaimed_graph: Graph, target_node: string, max_depth: number) {
+    const owned_edges = owned_graph.edges();
+    const reachable_nodes_set = new Set<string>();
+    owned_edges.map(e => e.v).forEach(node => reachable_nodes_set.add(node));
+    owned_edges.map(e => e.w).forEach(node => reachable_nodes_set.add(node));
+    const reachable_nodes = Array.from(reachable_nodes_set);
+  
+    if (reachable_nodes.includes(target_node)) {
+      return null;
+    }
+    
+    let depth = 1;
+    
+    while (depth <= max_depth) {
+      let bestPath: string[] | null = null;
+      let bestWeight = Number.POSITIVE_INFINITY;
+      let bestPointsPerTrainCar = 0;
+      let bestUnclaimedEdges: [string, string][] = [];
+      
+      for (const start_node of reachable_nodes) {
+        type QueueEntry = [number, string, string[], [string, string][]];
+        const queue: QueueEntry[] = [[0, start_node, [start_node], []]];
+        const visited = new Map<string, number>();
+        visited.set(start_node, 0);
+        
+        while (queue.length > 0) {
+          queue.sort((a, b) => a[0] - b[0]);
+          const [weight, current, path, unclaimedEdges] = queue.shift()!;
+          
+          if (weight > (visited.get(current) || Number.POSITIVE_INFINITY)) {
+            continue;
+          }
+          
+          if (current === target_node) {
+            if (weight < bestWeight) {
+              bestWeight = weight;
+              bestPath = path;
+              bestUnclaimedEdges = unclaimedEdges;
+            } else if (weight === bestWeight) {
+              const total_points = unclaimedEdges.reduce((sum, edges) => {
+                const edge_weight = unclaimed_graph.edge(edges[0], edges[1]).weight;
+                const points = ROUTE_LENGTH_TO_POINTS[edge_weight];
+                return sum + points;
+              }, 0);
+
+              const total_num_train_cars = unclaimedEdges.reduce((sum, edges) => {
+                return sum + unclaimed_graph.edge(edges[0], edges[1]).weight;
+              }, 0);
+
+              const points_per_train_car = total_points / total_num_train_cars;
+
+              if (points_per_train_car > bestPointsPerTrainCar) {
+                bestPointsPerTrainCar = points_per_train_car;
+                bestPath = path;
+                bestUnclaimedEdges = unclaimedEdges;
+              }
+            }
+            break;
+          }
+          
+          if (path.length >= depth) {
+            continue;
+          }
+          
+          const ownedNeighbors = owned_graph.neighbors(current) || [];
+          for (const neighbor of ownedNeighbors) {
+            const edgeData = owned_graph.edge(current, neighbor);
+            const edgeWeight = (edgeData && edgeData.weight) || 1;
+            const newWeight = weight + edgeWeight;
+            
+            if (newWeight < (visited.get(neighbor) || Number.POSITIVE_INFINITY)) {
+              visited.set(neighbor, newWeight);
+              const newPath = [...path, neighbor];
+              queue.push([newWeight, neighbor, newPath, [...unclaimedEdges]]);
+            }
+          }
+          
+          const unclaimedNeighbors = unclaimed_graph.neighbors(current) || [];
+          for (const neighbor of unclaimedNeighbors) {
+            const edgeData = unclaimed_graph.edge(current, neighbor);
+            const edgeWeight = (edgeData && edgeData.weight) || 1;
+            const newWeight = weight + edgeWeight;
+            
+            if (newWeight < (visited.get(neighbor) || Number.POSITIVE_INFINITY)) {
+              visited.set(neighbor, newWeight);
+              const newPath = [...path, neighbor];
+              const newUnclaimedEdges: [string, string][] = [...unclaimedEdges, [current, neighbor]];
+              queue.push([newWeight, neighbor, newPath, newUnclaimedEdges]);
+            }
+          }
+        }
+      }
+      
+      if (bestPath !== null) {
+        return {
+          totalWeight: bestWeight,
+          unclaimedEdges: bestUnclaimedEdges,
+          bestPointsPerTrainCar
+        };
+      }
+      
+      depth++;
+    }
+    
+    return null;
   }
 }
