@@ -258,7 +258,7 @@ function init_websocket_server() {
 			const players = lobby.players;
 			const playerColors = Object.values(PlayerColor);
 			const game_players = players.map((p, i) => p.type === 'Agent' ? new Agent(p.id, p.username, playerColors[i]) : new Player(p.id, p.username, playerColors[i]));
-			const game = new Game(game_players, emit, emitOnOtherPlayerKeepTrainCarCard);
+			const game = new Game(game_players, emit, emitFinalGameToAllClients, emitOnOtherPlayerKeepTrainCarCard);
 
 			game_id_to_game[game.id] = game;
 

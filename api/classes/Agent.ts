@@ -1,6 +1,6 @@
 import { Graph, alg } from "@dagrejs/graphlib";
 import { Color, PlayerColor, Route, TicketCard } from "../types";
-import { Game } from "./Game";
+import { Game, GameStatus } from "./Game";
 import { Player } from "./Player";
 import { ROUTE_LENGTH_TO_POINTS, TRAIN_ROUTES } from "../constants";
 import { find_steiner_tree } from "./SteinerTree";
@@ -476,6 +476,10 @@ export class Agent extends Player {
           game.emitOnOtherPlayerKeepTrainCarCard(game.id, this.id, undefined, kept_card);
         }
       }
+    }
+
+    if (game.status === GameStatus.COMPLETE) {
+      game.emitFinal(game.id);
     }
   }
 

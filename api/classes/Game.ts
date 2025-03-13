@@ -30,9 +30,10 @@ export class Game {
   lastRoundPlayerId: null | string;
   standings: string[];
   emit: (game_id: string) => void;
+  emitFinal: (game_id: string) => void;
   emitOnOtherPlayerKeepTrainCarCard: Function;
   
-  constructor(players: Player[], emit: (game_id: string) => void, emitOnOtherPlayerKeepTrainCarCard: Function) {
+  constructor(players: Player[], emit: (game_id: string) => void, emitFinal: (game_id: string) => void, emitOnOtherPlayerKeepTrainCarCard: Function) {
     this.id = uuid();
     this.trainCarCardDeck = this.initializeTrainCarCardDeck();
     this.ticketCardDeck = this.initializeTicketCardDeck();
@@ -50,6 +51,7 @@ export class Game {
     this.lastRoundPlayerId = null;
     this.standings = [];
     this.emit = emit;
+    this.emitFinal = emitFinal;
     this.emitOnOtherPlayerKeepTrainCarCard = emitOnOtherPlayerKeepTrainCarCard;
   }
 
@@ -260,7 +262,7 @@ export class Game {
       }
       player.ticketCards.push(card);
     });
-    
+
     for (const card of player.proposedTicketCards) {
       if (!ticket_card_ids.includes(card.id)) {
         this.ticketCardDeck.cards.unshift(card);
