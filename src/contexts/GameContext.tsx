@@ -34,7 +34,8 @@ const defaultGame = {
   faceUpTrainCarCards: [],
 	status: GameStatus.PENDING,
 	activePlayerAction: ACTION.NO_ACTION,
-	standings: []
+	standings: [],
+	log: []
 } as Game;
 
 export enum ActionTypes {

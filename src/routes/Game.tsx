@@ -14,6 +14,7 @@ import RouteLengthPoints from "../components/RouteLengthPoints";
 import { GameStatus } from "../../api/classes/Game";
 import Scoreboard from "../components/Scoreboard";
 import AnimatedTrainCarCard from "../components/AnimatedTrainCarCard";
+import Log from "../components/Log";
 
 const Game = () => {
   const { game, otherPlayerSelectedCard } = useGame();
@@ -33,6 +34,7 @@ const Game = () => {
             )
           })}
           <PlayerScorecard key={player.id} player={activePlayer} />
+          <Log />
         </div>
         <div id='middle-container'>
           <div id='map-container'>

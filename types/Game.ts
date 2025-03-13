@@ -17,4 +17,5 @@ export type Game = {
   status: GameStatus;
   activePlayerAction: ACTION;
   standings: string[];
+  log: string[];
 };

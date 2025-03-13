@@ -32,6 +32,7 @@ export class Game {
   emit: (game_id: string) => void;
   emitFinal: (game_id: string) => void;
   emitOnOtherPlayerKeepTrainCarCard: Function;
+  log: string[];
   
   constructor(players: Player[], emit: (game_id: string) => void, emitFinal: (game_id: string) => void, emitOnOtherPlayerKeepTrainCarCard: Function) {
     this.id = uuid();
@@ -53,6 +54,7 @@ export class Game {
     this.emit = emit;
     this.emitFinal = emitFinal;
     this.emitOnOtherPlayerKeepTrainCarCard = emitOnOtherPlayerKeepTrainCarCard;
+    this.log = [];
   }
 
   updateFaceUpTrainCarCards(replacements?: TrainCarCard[]) {
@@ -205,6 +207,8 @@ export class Game {
         duplicate_route.disabled = true;
       }
     }
+
+    this.log.push(`Player ${player.username} claimed route ${route.start} - ${route.destination}`);
     
     this.nextTurn();
 
@@ -271,6 +275,8 @@ export class Game {
 
     player.proposedTicketCards = [];
 
+    this.log.push(`Player ${player.username} kept ${ticket_card_ids.length} ticket cards`);
+
     if (!is_initial_ticket_selection) {
       this.nextTurn();
     }
@@ -317,6 +323,8 @@ export class Game {
       this.updateFaceUpTrainCarCards([card]);
     }
     this.activePlayerNumDrawnCards += 1;
+
+    this.log.push(`Player ${player.username} took a card`);
 
     if (this.activePlayerNumDrawnCards >= this.activePlayerMaxNumDrawnCards) {
       this.nextTurn();
@@ -369,7 +377,8 @@ export class Game {
       status: this.status,
       activePlayerAction: this.activePlayerAction,
       lastRoundPlayerId: this.lastRoundPlayerId,
-      standings: this.standings
+      standings: this.standings,
+      log: this.log
     };
   }
 
